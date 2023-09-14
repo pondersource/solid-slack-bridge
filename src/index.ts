@@ -1,7 +1,9 @@
 import { App } from "@slack/bolt";
 import { BOLT_PORT, boltConfig } from "./constants";
 import axios from "axios";
+
 import { IMessage } from "./types";
+
 
 const app = new App(boltConfig);
 
@@ -10,9 +12,8 @@ const app = new App(boltConfig);
 
   await app.start(BOLT_PORT);
 
-  //   app.message("quote", async ({ message, say }: any) => {});
-
   app.message(async ({ message, say }) => {
+   
     const _message = message as IMessage;
 
     try {

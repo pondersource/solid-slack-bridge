@@ -1,27 +1,37 @@
 import { App } from "@slack/bolt";
-import { BOLT_PORT, boltConfig } from "./constants";
+import { boltConfig } from "./constants";
 import axios from "axios";
 
 import { IMessage } from "./types";
+import { PORT, SLACK_BOT_USER_TOKEN, SLACK_SIGNING_SECRET } from "./config/default";
 
 const app = new App({
-  ...boltConfig,
-  customRoutes: [
-    {
-      path: "/health-check",
-      method: ["GET"],
-      handler: (req, res) => {
-        res.writeHead(200);
-        res.end(JSON.stringify({"k":"v"}));
-      },
-    },
-  ],
+  signingSecret: process.env.SLACK_SIGNING_SECRET,
+  token: process.env.SLACK_BOT_USER_TOKEN,
+  // customRoutes: [
+  //   {
+  //     path: "/",
+  //     method: ["GET"],
+  //     handler: (req, res) => {
+  //       res.writeHead(200);
+  //       res.end("OK");
+  //     },
+  //   },
+  //   {
+  //     path: "/health-check",
+  //     method: ["GET"],
+  //     handler: (req, res) => {
+  //       res.writeHead(200);
+  //       res.end(JSON.stringify({ "k": "v" }));
+  //     },
+  //   },
+  // ],
 });
 
 (async () => {
   console.log("Connecting to slack");
 
-  await app.start(BOLT_PORT);
+  await app.start(PORT);
 
   app.message(async ({ message, say }) => {
     const _message = message as IMessage;

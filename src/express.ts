@@ -1,30 +1,78 @@
-import { SLACK_BOT_USER_TOKEN, SLACK_SIGNING_SECRET } from "./config/default";
+import express, { NextFunction, Request, Response } from "express"
+import { baseURL } from "./constants";
+const cookieSession = require("cookie-session");
+const {
+  getSessionFromStorage,
+  getSessionIdFromStorageAll,
+  Session
+} = require("@inrupt/solid-client-authn-node");
 
-const { App, ExpressReceiver } = require('@slack/bolt');
 
-// Create a Bolt Receiver
-const receiver = new ExpressReceiver({ signingSecret: SLACK_SIGNING_SECRET });
+const app = express()
 
-// Create the Bolt App, using the receiver
-const app = new App({
-  signingSecret: SLACK_SIGNING_SECRET,
-  token: SLACK_BOT_USER_TOKEN,
-  receiver
+
+app.use(express.json())
+app.use(
+  cookieSession({
+    name: "session",
+    // These keys are required by cookie-session to sign the cookies.
+    keys: [
+      "Required, but value not relevant for this demo - key1",
+      "Required, but value not relevant for this demo - key2",
+    ],
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  })
+);
+
+app.get("/", async (req: Request, res: Response, next) => {
+  const sessionIds = await getSessionIdFromStorageAll();
+  for (const sessionId in sessionIds) {
+    // Do something with the session ID...
+  }
+  res.send(
+    `<p>There are currently [${sessionIds.length}] visitors.</p>`
+  );
 });
 
-// Slack interactions are methods on app
-app.event('message', async ({ event, client }: any) => {
-  // Do some slack-specific stuff here
-  // await client.chat.postMessage(...);
+app.get("/login", async (req: Request, res: Response) => {
+  const session = new Session();
+  if (req.session) req.session.sessionId = session.info.sessionId;
+
+  await session.login({
+    redirectUrl: `${baseURL}/login/callback`,
+    oidcIssuer: "https://login.inrupt.com",
+    clientName: "Demo app",
+    handleRedirect: (url: any) => res.redirect(url),
+  });
 });
 
-// Other web requests are methods on receiver.router
-receiver.router.post('/secret-page', (req: any, res: any) => {
-  // You're working with an express req and res now.
-  res.send('yay!');
+app.get("/login/callback", async (req: Request, res: Response) => {
+  const session = await getSessionFromStorage(req.session?.sessionId);
+
+  await session.handleIncomingRedirect(`${baseURL}${req.url}`);
+
+  if (session.info.isLoggedIn) {
+    (req as any).webId = "webId"
+    return res.send(`<p>Logged in with the WebID ${session.info.webId}.</p>`)
+  }
+});
+app.post("/post", async (req: Request, res: Response) => {
+
+  const msgBody = req.body
+  console.log("msgBody", msgBody);
+  res.send(msgBody)
+  // const session = await getSessionFromStorage(req.session?.sessionId);
+
+  // if (session.info.isLoggedIn) {
+  //   return res.send({ webId: session.info.webId })
+  // }
+
 });
 
-(async () => {
-  await app.start(8080);
-  console.log('app is running');
-})()
+app.get("/logout", async (req: Request, res: Response, next: NextFunction) => {
+  const session = await getSessionFromStorage(req.session?.sessionId);
+  session.logout();
+  res.send(`<p>Logged out.</p>`);
+});
+
+export const expressApp = app

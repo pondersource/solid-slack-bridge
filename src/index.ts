@@ -1,5 +1,4 @@
 import { App } from "@slack/bolt";
-import { boltConfig } from "./constants";
 import axios from "axios";
 
 import { IMessage } from "./types";

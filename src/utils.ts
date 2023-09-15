@@ -1,16 +1,22 @@
-import { EXPRESS_PORT } from "./constants"
-import express from "express"
+import {
+    addDatetime,
+    addStringNoLocale,
+    createThing,
+    getSolidDataset,
+    saveSolidDatasetAt,
+    setThing
+} from "@inrupt/solid-client";
 
-export const runServer = () => {
-    console.log('Starting server')
+export const createChat = async (content: string) => {
+    const indexUrl = "https://michielbdejong.solidcommunity.net/shops/Chat/id1694605963871/index.ttl"
+    const dataset = await getSolidDataset(indexUrl);
+    let chat
+    chat = addDatetime(createThing(), "http://purl.org/dc/terms/created", new Date());
+    chat = addStringNoLocale(chat, "http://rdfs.org/sioc/ns#content", content);
+    chat = addStringNoLocale(chat, "http://xmlns.com/foaf/0.1/maker", "https://solid-crud-tests-example-1.solidcommunity.net/profile/card#me");
 
-    const server = express()
+    const updatedThing = setThing(dataset, chat);
 
-    server.get("/", (req, res) => {
-        res.json({
-            "Hello": "World"
-        })
-    })
-
-    server.listen(EXPRESS_PORT, () => console.log(`Server started on port ${EXPRESS_PORT}`))
-}
+    const updatedDataset = await saveSolidDatasetAt(indexUrl, updatedThing);
+    console.log("updatedDataset", updatedDataset);
+};

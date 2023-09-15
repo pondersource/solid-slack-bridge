@@ -21,7 +21,7 @@ const app = new App({
       method: ["GET"],
       handler: (req, res) => {
         res.writeHead(200);
-        res.end(JSON.stringify({ "k": "v" }));
+        res.end(JSON.stringify({ "status": "healthy" }));
       },
     },
   ],

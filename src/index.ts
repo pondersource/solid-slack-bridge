@@ -4,8 +4,19 @@ import axios from "axios";
 
 import { IMessage } from "./types";
 
-
-const app = new App(boltConfig);
+const app = new App({
+  ...boltConfig,
+  customRoutes: [
+    {
+      path: "/health-check",
+      method: ["GET"],
+      handler: (req, res) => {
+        res.writeHead(200);
+        res.end(JSON.stringify({"k":"v"}));
+      },
+    },
+  ],
+});
 
 (async () => {
   console.log("Connecting to slack");
@@ -13,7 +24,6 @@ const app = new App(boltConfig);
   await app.start(BOLT_PORT);
 
   app.message(async ({ message, say }) => {
-   
     const _message = message as IMessage;
 
     try {

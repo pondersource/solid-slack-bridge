@@ -1,12 +1,10 @@
 require('dotenv').config();
+
 import { App, LogLevel } from "@slack/bolt";
+import { apiClient } from "./apiClient";
 import { PORT } from "./config/default";
 import { expressReceiver } from "./expressReceiver";
 import { IMessage } from "./types";
-import { createChat, createChatHttp } from "./utils";
-import { getSessionFromStorage } from "@inrupt/solid-client-authn-node";
-import axios from "axios";
-import { ParamsIncomingMessage } from "@slack/bolt/dist/receivers/ParamsIncomingMessage";
 
 
 const app = new App({
@@ -30,46 +28,18 @@ const app = new App({
 
 app.message(async ({ message, say, context }) => {
   const _message = message as IMessage;
-  fetch('https://jsonplaceholder.typicode.com/todos/1')
-    .then(response => response.json())
-    .then(json => console.log(json))
-
-  // console.log("context", context);
-  // console.log(`context.req.webId`, context.req.webId);
-  // console.log(`req.session.sessionId`, context.req.session.sessionId);
   // const session = await getSessionFromStorage(context.req.session.sessionId);
-  // console.log(`session`, session);
-  // console.log(`Logged in with the WebID ${session?.info.webId}`);
-
-
-  let config = {
-    method: 'post',
-    maxBodyLength: Infinity,
-    url: 'https://8000-pondersourc-solidslackb-g76h1bqdgog.ws-eu104.gitpod.io/write-to-pod',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    data: JSON.stringify({
-      "text": _message.text
-    })
-  };
-
-  axios.request(config)
-    .then((response) => {
-      console.log(JSON.stringify(response.data));
-    })
-    .catch((error) => {
-      console.log(error);
-    });
 
   try {
-    // await axios.post(`${baseURL}/write-to-pod`, {
-    //   text: _message.text
-    // })
-
-
     // await createChat(_message.text);
     // await createChatHttp(_message);
+
+    const { data, status } = await apiClient.post('/write-to-pod', _message)
+
+    console.log(".....................");
+    console.log(data);
+    console.log(".....................");
+
   } catch (error: any) {
     console.log(error.message);
   }

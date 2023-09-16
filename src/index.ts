@@ -6,7 +6,6 @@ import { IMessage } from "./types";
 import { createChat } from "./utils";
 import { getSessionFromStorage } from "@inrupt/solid-client-authn-node";
 import axios from "axios";
-import { baseURL } from "./constants";
 import { ParamsIncomingMessage } from "@slack/bolt/dist/receivers/ParamsIncomingMessage";
 
 

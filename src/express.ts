@@ -24,7 +24,7 @@ app.use(
   })
 );
 
-app.get("/", async (req: Request, res: Response, next) => {
+app.get("/", async (req: Request, res: Response, next: NextFunction) => {
   const sessionIds = await getSessionIdFromStorageAll();
   for (const sessionId in sessionIds) {
     // Do something with the session ID...

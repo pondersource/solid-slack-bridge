@@ -18,6 +18,9 @@ export const expressReceiver = new ExpressReceiver({
 
 expressReceiver.app.use(express.json())
 
+expressReceiver.router.get('/', async (req, res) => {
+    res.send("OK")
+});
 expressReceiver.router.post('/post', async (req, res) => {
     const msgBody = req.body
     console.log("expressReceiver:msgBody", msgBody);

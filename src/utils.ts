@@ -2,30 +2,38 @@ import {
     addDatetime,
     addStringNoLocale,
     createThing,
-    getSolidDataset,
+    getThing,
     addNamedNode,
+    getSolidDataset,
     saveSolidDatasetAt,
-
-    setThing
+    setThing,
+    Thing
 } from "@inrupt/solid-client";
+import RdfJsDataFactory from "@rdfjs/data-model";
 import { ParamsIncomingMessage } from "@slack/bolt/dist/receivers/ParamsIncomingMessage";
 import axios from "axios";
 import { IMessage } from "./types";
 
-export const createChat = async (content: string) => {
+export const createMessage = async (content: string) => {
+    // Get the dataset
     const indexUrl = "https://michielbdejong.solidcommunity.net/shops/Chat/id1694605963871/index.ttl"
-    const dataset = await getSolidDataset(indexUrl);
+    let dataset = await getSolidDataset(indexUrl);
 
-    let chat
-    chat = addDatetime(createThing(), "http://purl.org/dc/terms/created", new Date());
-    chat = addStringNoLocale(chat, "http://rdfs.org/sioc/ns#content", content);
-    chat = addStringNoLocale(chat, "http://xmlns.com/foaf/0.1/maker", "https://solid-crud-tests-example-1.solidcommunity.net/profile/card#me");
+    // Create the message thing
+    let message = addDatetime(createThing(), "http://purl.org/dc/terms/created", new Date());
+    message = addStringNoLocale(message, "http://rdfs.org/sioc/ns#content", content);
+    message = addNamedNode(message, "http://xmlns.com/foaf/0.1/maker", RdfJsDataFactory.namedNode("https://solid-crud-tests-example-1.solidcommunity.net/profile/card#me"));
+    dataset = setThing(dataset, message);
 
-    const updatedThing = setThing(dataset, chat);
+    // Update "this" thing to include the new message in the list
+    let thisThing = getThing(dataset, indexUrl + '#this') as Thing;
+    thisThing = addNamedNode(thisThing, 'http://www.w3.org/2005/01/wf/flow#message', RdfJsDataFactory.namedNode(message.url));
+    dataset = setThing(dataset, thisThing);
 
-    const updatedDataset = await saveSolidDatasetAt(indexUrl, updatedThing);
+    // Save the modified dataset
+    const updatedDataset = await saveSolidDatasetAt(indexUrl, dataset);
 
-    console.log("updatedDataset", updatedDataset);
+    console.log("Dataset updated");
 };
 
 export function getBody(request: ParamsIncomingMessage) {

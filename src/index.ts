@@ -6,13 +6,15 @@ import { PORT } from "./config/default";
 import { expressReceiver } from "./expressReceiver";
 import { IMessage } from "./types";
 import { createChat } from "./utils";
+import { sharedSessions } from "./sharedSessions";
+
 
 
 const app = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
   token: process.env.SLACK_BOT_USER_TOKEN,
   logLevel: LogLevel.DEBUG,
-  // receiver: expressReceiver,
+  receiver: expressReceiver,
   // customRoutes: [
   //   {
   //     path: '/post',
@@ -28,13 +30,23 @@ const app = new App({
 
 
 app.message(async ({ message, say, context }) => {
+  // console.log("---------------------");
+  // console.log(sharedSessions);
+  // console.log("---------------------");
+  
+  
   const _message = message as IMessage;
+  console.log("---------------------");
+  console.log(_message);
+  console.log("---------------------");
+
   // const session = await getSessionFromStorage(context.req.session.sessionId);
 
   try {
-    await createChat(_message.text);
+    // await createChat(_message.text);
     // await createChatHttp(_message);
 
+    // await apiClient.get('/login')
     // const { data, status } = await apiClient.post('/write-to-pod', _message)
 
     // console.log(".....................");

@@ -5,9 +5,7 @@ import { apiClient } from "./apiClient";
 import { PORT } from "./config/default";
 import { expressReceiver } from "./expressReceiver";
 import { IMessage } from "./types";
-import { createChat } from "./utils";
-import { sharedSessions } from "./sharedSessions";
-
+import { createMessage } from "./utils";
 
 
 const app = new App({
@@ -43,7 +41,7 @@ app.message(async ({ message, say, context }) => {
   // const session = await getSessionFromStorage(context.req.session.sessionId);
 
   try {
-    // await createChat(_message.text);
+    await createMessage(_message.text);
     // await createChatHttp(_message);
 
     // await apiClient.get('/login')

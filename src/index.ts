@@ -6,6 +6,7 @@ import { PORT } from "./config/default";
 import { expressReceiver } from "./expressReceiver";
 import { IMessage } from "./types";
 import { createMessage } from "./utils";
+import { sharedSessions } from "./sharedSessions";
 
 
 const app = new App({
@@ -31,17 +32,18 @@ app.message(async ({ message, say, context }) => {
   // console.log("---------------------");
   // console.log(sharedSessions);
   // console.log("---------------------");
-  
-  
+
+
   const _message = message as IMessage;
   console.log("---------------------");
   console.log(_message);
   console.log("---------------------");
 
   // const session = await getSessionFromStorage(context.req.session.sessionId);
-
+  // sharedSessions
   try {
-    // await createMessage(_message.text);
+    // TODO
+    // await createMessage({ messageBody: _message, session: sharedSessions });
     // await createChatHttp(_message);
 
     // await apiClient.get('/login')

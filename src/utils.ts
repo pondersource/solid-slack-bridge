@@ -19,33 +19,25 @@ import { Session } from "@inrupt/solid-client-authn-node";
 
 
 export const getChatIndexUrl = async ({ session, chatID }: { session: Session, chatID: string }) => {
-    // let chatID = "general"
     const pods = await getPodUrlAll(session.info.webId!, { fetch: session.fetch });
-    // /chats/Yashar%20%26%20Reza/index.ttl
-
     return `${pods[0]}chats/${chatID}/index.tts`;
 };
 
 
 export const getOrCreateChatDataset = async ({ session, chatID }: { session: Session, chatID: string }) => {
     const indexUrl = await getChatIndexUrl({ session, chatID })
-    // let chatID = "general"
-    // const pods = await getPodUrlAll(session.info.webId!, { fetch: session.fetch });
-    // // /chats/Yashar%20%26%20Reza/index.ttl
-    // const indexUrl = `${pods[0]}chats/${chatID}index.ttl`;
-
     try {
-        const ds = await getSolidDataset(indexUrl, { fetch: session.fetch });
-        return ds;
+        return await getSolidDataset(indexUrl, { fetch: session.fetch });
     } catch (error: any) {
         if (error.statusCode === 404) {
-            const list = saveSolidDatasetAt(indexUrl, createSolidDataset(), { fetch: session.fetch });
-            return list;
+            return saveSolidDatasetAt(indexUrl, createSolidDataset(), { fetch: session.fetch });
         }
     }
 };
 
-export const createMessage = async (content: string) => {
+export const createMessage = async ({ messageBody, session }: { messageBody: IMessage, session: Session }) => {
+    const { text, ts, channel, user } = messageBody
+    // let dataset = await getOrCreateChatDataset({session, chatID})
     // Get the dataset
     const indexUrl = "https://michielbdejong.solidcommunity.net/shops/Chat/id1694605963871/index.ttl"
     let dataset = await getSolidDataset(indexUrl);
@@ -53,7 +45,7 @@ export const createMessage = async (content: string) => {
     // Create the message thing
     let message
     message = addDatetime(createThing(), "http://purl.org/dc/terms/created", new Date());
-    message = addStringNoLocale(message, "http://rdfs.org/sioc/ns#content", content);
+    message = addStringNoLocale(message, "http://rdfs.org/sioc/ns#content", text);
     message = addNamedNode(message, "http://xmlns.com/foaf/0.1/maker", namedNode("https://solid-crud-tests-example-1.solidcommunity.net/profile/card#me"));
 
     dataset = setThing(dataset, message);

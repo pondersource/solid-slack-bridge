@@ -1,5 +1,5 @@
 import express, { NextFunction, Request, Response } from "express"
-import { baseURL } from "./constants";
+import { BASE_URL } from "./config/default";
 const cookieSession = require("cookie-session");
 const {
   getSessionFromStorage,
@@ -39,7 +39,7 @@ app.get("/login", async (req: Request, res: Response) => {
   if (req.session) req.session.sessionId = session.info.sessionId;
 
   await session.login({
-    redirectUrl: `${baseURL}/login/callback`,
+    redirectUrl: `${BASE_URL}/login/callback`,
     oidcIssuer: "https://login.inrupt.com",
     clientName: "Demo app",
     handleRedirect: (url: any) => res.redirect(url),
@@ -49,7 +49,7 @@ app.get("/login", async (req: Request, res: Response) => {
 app.get("/login/callback", async (req: Request, res: Response) => {
   const session = await getSessionFromStorage(req.session?.sessionId);
 
-  await session.handleIncomingRedirect(`${baseURL}${req.url}`);
+  await session.handleIncomingRedirect(`${BASE_URL}${req.url}`);
 
   if (session.info.isLoggedIn) {
     (req as any).webId = "webId"

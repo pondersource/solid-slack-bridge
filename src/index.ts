@@ -41,7 +41,7 @@ app.message(async ({ message, say, context }) => {
   // const session = await getSessionFromStorage(context.req.session.sessionId);
 
   try {
-    await createMessage(_message.text);
+    // await createMessage(_message.text);
     // await createChatHttp(_message);
 
     // await apiClient.get('/login')

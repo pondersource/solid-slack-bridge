@@ -7,12 +7,32 @@ import {
     getSolidDataset,
     saveSolidDatasetAt,
     setThing,
-    Thing
+    Thing,
+    createSolidDataset,
+    getPodUrlAll
 } from "@inrupt/solid-client";
 import { namedNode } from "@rdfjs/data-model";
 import { ParamsIncomingMessage } from "@slack/bolt/dist/receivers/ParamsIncomingMessage";
 import axios from "axios";
 import { IMessage } from "./types";
+import { Session } from "@inrupt/solid-client-authn-node";
+
+export const getOrCreateChatDataset = async ({ session, chatID }: { session: Session, chatID: string }) => {
+    // let chatID = "general"
+    const pods = await getPodUrlAll(session.info.webId!, { fetch: session.fetch });
+    // /chats/Yashar%20%26%20Reza/index.ttl
+    const indexUrl = `${pods[0]}chats/${chatID}index.ttl`;
+
+    try {
+        const ds = await getSolidDataset(indexUrl, { fetch: session.fetch });
+        return ds;
+    } catch (error: any) {
+        if (error.statusCode === 404) {
+            const list = saveSolidDatasetAt(indexUrl, createSolidDataset(), { fetch: session.fetch });
+            return list;
+        }
+    }
+};
 
 export const createMessage = async (content: string) => {
     // Get the dataset
@@ -26,8 +46,8 @@ export const createMessage = async (content: string) => {
     message = addNamedNode(message, "http://xmlns.com/foaf/0.1/maker", namedNode("https://solid-crud-tests-example-1.solidcommunity.net/profile/card#me"));
 
     dataset = setThing(dataset, message);
-    console.log("message.url",namedNode(message.url));
-    
+    console.log("message.url", namedNode(message.url));
+
     // Update "this" thing to include the new message in the list
     let thisThing = getThing(dataset, indexUrl + '#this') as Thing;
 

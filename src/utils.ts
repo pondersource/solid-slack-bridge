@@ -17,11 +17,22 @@ import axios from "axios";
 import { IMessage } from "./types";
 import { Session } from "@inrupt/solid-client-authn-node";
 
-export const getOrCreateChatDataset = async ({ session, chatID }: { session: Session, chatID: string }) => {
+
+export const getChatIndexUrl = async ({ session, chatID }: { session: Session, chatID: string }) => {
     // let chatID = "general"
     const pods = await getPodUrlAll(session.info.webId!, { fetch: session.fetch });
     // /chats/Yashar%20%26%20Reza/index.ttl
-    const indexUrl = `${pods[0]}chats/${chatID}index.ttl`;
+
+    return `${pods[0]}chats/${chatID}/index.tts`;
+};
+
+
+export const getOrCreateChatDataset = async ({ session, chatID }: { session: Session, chatID: string }) => {
+    const indexUrl = await getChatIndexUrl({ session, chatID })
+    // let chatID = "general"
+    // const pods = await getPodUrlAll(session.info.webId!, { fetch: session.fetch });
+    // // /chats/Yashar%20%26%20Reza/index.ttl
+    // const indexUrl = `${pods[0]}chats/${chatID}index.ttl`;
 
     try {
         const ds = await getSolidDataset(indexUrl, { fetch: session.fetch });

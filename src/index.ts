@@ -5,13 +5,14 @@ import { apiClient } from "./apiClient";
 import { PORT } from "./config/default";
 import { expressReceiver } from "./expressReceiver";
 import { IMessage } from "./types";
+import { createChat } from "./utils";
 
 
 const app = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
   token: process.env.SLACK_BOT_USER_TOKEN,
   logLevel: LogLevel.DEBUG,
-  receiver: expressReceiver,
+  // receiver: expressReceiver,
   // customRoutes: [
   //   {
   //     path: '/post',
@@ -31,14 +32,14 @@ app.message(async ({ message, say, context }) => {
   // const session = await getSessionFromStorage(context.req.session.sessionId);
 
   try {
-    // await createChat(_message.text);
+    await createChat(_message.text);
     // await createChatHttp(_message);
 
-    const { data, status } = await apiClient.post('/write-to-pod', _message)
+    // const { data, status } = await apiClient.post('/write-to-pod', _message)
 
-    console.log(".....................");
-    console.log(data);
-    console.log(".....................");
+    // console.log(".....................");
+    // console.log(data);
+    // console.log(".....................");
 
   } catch (error: any) {
     console.log(error.message);

@@ -9,7 +9,7 @@ import {
     setThing,
     Thing
 } from "@inrupt/solid-client";
-import RdfJsDataFactory from "@rdfjs/data-model";
+import { namedNode } from "@rdfjs/data-model";
 import { ParamsIncomingMessage } from "@slack/bolt/dist/receivers/ParamsIncomingMessage";
 import axios from "axios";
 import { IMessage } from "./types";
@@ -20,14 +20,18 @@ export const createMessage = async (content: string) => {
     let dataset = await getSolidDataset(indexUrl);
 
     // Create the message thing
-    let message = addDatetime(createThing(), "http://purl.org/dc/terms/created", new Date());
+    let message
+    message = addDatetime(createThing(), "http://purl.org/dc/terms/created", new Date());
     message = addStringNoLocale(message, "http://rdfs.org/sioc/ns#content", content);
-    message = addNamedNode(message, "http://xmlns.com/foaf/0.1/maker", RdfJsDataFactory.namedNode("https://solid-crud-tests-example-1.solidcommunity.net/profile/card#me"));
-    dataset = setThing(dataset, message);
+    message = addNamedNode(message, "http://xmlns.com/foaf/0.1/maker", namedNode("https://solid-crud-tests-example-1.solidcommunity.net/profile/card#me"));
 
+    dataset = setThing(dataset, message);
+    console.log("message.url",namedNode(message.url));
+    
     // Update "this" thing to include the new message in the list
     let thisThing = getThing(dataset, indexUrl + '#this') as Thing;
-    thisThing = addNamedNode(thisThing, 'http://www.w3.org/2005/01/wf/flow#message', RdfJsDataFactory.namedNode(message.url));
+
+    thisThing = addNamedNode(thisThing, 'http://www.w3.org/2005/01/wf/flow#message', namedNode(message.url));
     dataset = setThing(dataset, thisThing);
 
     // Save the modified dataset

@@ -20,7 +20,7 @@ import { Session } from "@inrupt/solid-client-authn-node";
 
 export const getChatIndexUrl = async ({ session, chatID }: { session: Session, chatID: string }) => {
     const pods = await getPodUrlAll(session.info.webId!, { fetch: session.fetch });
-    return `${pods[0]}chats/${chatID}/index.tts`;
+    return `${pods[0]}shops/Chat/${chatID}/index.tts`;
 };
 
 
@@ -30,46 +30,43 @@ export const getOrCreateChatDataset = async ({ session, chatID }: { session: Ses
         return await getSolidDataset(indexUrl, { fetch: session.fetch });
     } catch (error: any) {
         if (error.statusCode === 404) {
-            return saveSolidDatasetAt(indexUrl, createSolidDataset(), { fetch: session.fetch });
+            let ds = createSolidDataset()
+            return saveSolidDatasetAt(indexUrl, ds, { fetch: session.fetch });
         }
     }
 };
 
 export const createMessage = async ({ messageBody }: { messageBody: IMessage }) => {
     const { text, ts, channel, user } = messageBody
-    // Get the dataset
     const indexUrl = "https://michielbdejong.solidcommunity.net/shops/Chat/id1694605963871/index.ttl"
-    console.log("-------------0");
     let dataset = await getSolidDataset(indexUrl);
-    console.log("-------------1");
-    
+
     // Create the message thing
     let message
-    console.log("-------------2");
     message = addDatetime(createThing(), "http://purl.org/dc/terms/created", new Date());
-    console.log("-------------3");
     message = addStringNoLocale(message, "http://rdfs.org/sioc/ns#content", text);
-    console.log("-------------4");
     message = addNamedNode(message, "http://xmlns.com/foaf/0.1/maker", namedNode("https://solid-crud-tests-example-1.solidcommunity.net/profile/card#me"));
-    console.log("-------------5");
-    
+
     dataset = setThing(dataset, message);
-    console.log("-------------6");
-    console.log("message.url", namedNode(message.url));
-    console.log("-------------7");
-    
+
     // Update "this" thing to include the new message in the list
     let thisThing = getThing(dataset, indexUrl + '#this') as Thing;
-    console.log("-------------8");
-    
-    thisThing = addNamedNode(thisThing, 'http://www.w3.org/2005/01/wf/flow#message', namedNode(message.url));
-    console.log("-------------9");
-    dataset = setThing(dataset, thisThing);
-    console.log("-------------10");
-    
+    if (thisThing) {
+        console.log("....if");
+        thisThing = addNamedNode(thisThing, 'http://www.w3.org/2005/01/wf/flow#message', namedNode(message.url));
+        dataset = setThing(dataset, thisThing);
+
+    } else {
+        console.log("....else");
+
+        thisThing = createThing({ name: "this" })
+        thisThing = addNamedNode(thisThing, 'http://www.w3.org/2005/01/wf/flow#message', namedNode(message.url));
+        dataset = setThing(dataset, thisThing);
+    }
+
+
     // Save the modified dataset
     const updatedDataset = await saveSolidDatasetAt(indexUrl, dataset);
-    console.log("-------------11");
 
     console.log("Dataset updated");
 };
@@ -81,35 +78,28 @@ export const createUserMessage = async ({ messageBody, session }: { messageBody:
     console.log("🚀 ~ file: utils.ts:70 ~ createUserMessage ~ indexUrl:", indexUrl)
 
     let dataset = await getOrCreateChatDataset({ session, chatID: channel })
-    console.log("----------------1");
-
     // Create the message thing
     let message
-    console.log("----------------2");
     message = addDatetime(createThing(), "http://purl.org/dc/terms/created", new Date());
-    console.log("----------------3");
     message = addStringNoLocale(message, "http://rdfs.org/sioc/ns#content", text);
-    console.log("----------------4");
     message = addNamedNode(message, "http://xmlns.com/foaf/0.1/maker", namedNode("https://solid-crud-tests-example-1.solidcommunity.net/profile/card#me"));
-    console.log("----------------5");
 
     dataset = setThing(dataset!, message);
-    console.log("----------------6");
 
-    // Update "this" thing to include the new message in the list
     let thisThing = getThing(dataset, indexUrl + '#this') as Thing;
-    console.log("----------------7");
-
-    thisThing = addNamedNode(thisThing, 'http://www.w3.org/2005/01/wf/flow#message', namedNode(message.url));
-    console.log("----------------8");
-    dataset = setThing(dataset, thisThing);
-    console.log("----------------9");
-
+    if (thisThing) {
+        thisThing = addNamedNode(thisThing, 'http://www.w3.org/2005/01/wf/flow#message', namedNode(message.url));
+        dataset = setThing(dataset, thisThing);
+    } else {
+        console.log("first message");
+        thisThing = createThing({ name: "this" })
+        thisThing = addNamedNode(thisThing, 'http://www.w3.org/2005/01/wf/flow#message', namedNode(message.url));
+        dataset = setThing(dataset, thisThing);
+    }
     // Save the modified dataset
-    const updatedDataset = await saveSolidDatasetAt(indexUrl, dataset);
-    console.log("----------------10");
-
+    const updatedDataset = await saveSolidDatasetAt(indexUrl, dataset, { fetch: session.fetch });
     console.log("Dataset updated");
+    return updatedDataset
 };
 
 

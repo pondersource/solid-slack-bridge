@@ -49,8 +49,8 @@ expressReceiver.app.get("/login", async (req: Request, res: Response) => {
     if (req.session) req.session.sessionId = session.info.sessionId;
 
     await session.login({
-        // oidcIssuer: "https://solidcommunity.net/",
-        oidcIssuer: "https://login.inrupt.com",
+        oidcIssuer: "https://solidcommunity.net",
+        // oidcIssuer: "https://login.inrupt.com",
         redirectUrl: `${BASE_URL}/login/callback`,
         // redirectUrl: `https://app.slack.com/client/T03E34GGWE5/D05SELC7KGV`,
         clientName: "Demo app",

@@ -61,10 +61,13 @@ expressReceiver.app.get("/login", async (req: Request, res: Response) => {
 
 expressReceiver.app.get("/login/callback", async (req: Request, res: Response) => {
     const session = await getSessionFromStorage(req.session?.sessionId);
-
+    
     await session?.handleIncomingRedirect(`${BASE_URL}${req.url}`);
-
+    
     if (session?.info.webId) {
+        // TODO Request must have a slack user ID here
+        // storageProvider.saveSession(slackUUID, session?.info)
+
         sharedSessions["BOT_USER"] = session
         // sharedSessions[session?.info.webId] = session
     }

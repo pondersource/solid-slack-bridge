@@ -28,6 +28,11 @@ const app = new App({
 });
 
 app.message(async ({ message, say, context }) => {
+  // TODO get slack user ID from the message
+  // const sessionId = storageProvider.getSessionId(slackUUID);
+  // const storage = storageProvider.getStorage(slackUUID);
+  // const session = await getSessionFromStorage(sessionId, storage)
+  // This deprecates the line below \/
   const session = sharedSessions["BOT_USER"] as Session
   const _message = message as IMessage;
   console.log("----------onMessage-----------");

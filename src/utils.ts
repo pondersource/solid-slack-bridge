@@ -71,7 +71,6 @@ export const createMessage = async ({ messageBody }: { messageBody: IMessage }) 
     console.log("Dataset updated");
 };
 
-
 export const createUserMessage = async ({ messageBody, session }: { messageBody: IMessage, session: Session }) => {
     const { text, ts, channel, user } = messageBody
     const indexUrl = await getChatIndexUrl({ session, chatID: channel })

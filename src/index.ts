@@ -2,11 +2,12 @@ require('dotenv').config();
 
 import { App, LogLevel } from "@slack/bolt";
 import { apiClient } from "./apiClient";
-import { PORT } from "./config/default";
+import { BASE_URL, PORT } from "./config/default";
 import { expressReceiver } from "./expressReceiver";
 import { IMessage } from "./types";
-import { createMessage } from "./utils";
+import { createMessage, createUserMessage } from "./utils";
 import { sharedSessions } from "./sharedSessions";
+import { Session, getSessionFromStorage } from "@inrupt/solid-client-authn-node";
 
 
 const app = new App({
@@ -28,33 +29,39 @@ const app = new App({
 });
 
 
+// app.event('app_home_opened', async ({ event, client, logger, context }) => {
+//   console.log("............................");
+//   console.log("app_home_opened", context.req.webId);
+//   console.log("............................");
+//   // const session = await getSessionFromStorage(context.req.session?.sessionId);
+//   // await session?.handleIncomingRedirect(`${BASE_URL}${context.req.url}`);
+
+//   // await session?.handleIncomingRedirect(`https://app.slack.com/client/T03E34GGWE5/D05SELC7KGV`);
+//   // console.log("🚀 ~ file: index.ts:38 ~ app.event ~ session:", session)
+
+// });
 app.message(async ({ message, say, context }) => {
-  // console.log("---------------------");
-  // console.log(sharedSessions);
-  // console.log("---------------------");
-
-
+  const session = sharedSessions["BOT_USER"] as Session
   const _message = message as IMessage;
   console.log("---------------------");
   console.log(_message);
   console.log("---------------------");
 
-  // const session = await getSessionFromStorage(context.req.session.sessionId);
-  // sharedSessions
   try {
-    // TODO
-    // await createMessage({ messageBody: _message, session: sharedSessions });
-    // await createChatHttp(_message);
-
-    // await apiClient.get('/login')
-    // const { data, status } = await apiClient.post('/write-to-pod', _message)
-
-    // console.log(".....................");
-    // console.log(data);
-    // console.log(".....................");
-
+    await createMessage({ messageBody: _message });
   } catch (error: any) {
     console.log(error.message);
+  }
+  return
+  if (session) {
+    try {
+      // await createUserMessage({ session, messageBody: _message })
+      // await createMessage({ messageBody: _message, session: sharedSessions });
+    } catch (error: any) {
+      console.log(error.message);
+    }
+  } else {
+    say("You are not logein in, please visit https://guiding-bull-tidy.ngrok-free.app/login first")
   }
 });
 

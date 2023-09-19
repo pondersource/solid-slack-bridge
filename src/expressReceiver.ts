@@ -45,13 +45,14 @@ expressReceiver.app.get("/", async (req: Request, res: Response, next: NextFunct
 
 expressReceiver.app.get("/login", async (req: Request, res: Response) => {
     const session = new Session();
-    // mockSessions[session?.info.sessionId] = session.info.sessionId
 
     if (req.session) req.session.sessionId = session.info.sessionId;
 
     await session.login({
-        redirectUrl: `${BASE_URL}/login/callback`,
+        // oidcIssuer: "https://solidcommunity.net/",
         oidcIssuer: "https://login.inrupt.com",
+        redirectUrl: `${BASE_URL}/login/callback`,
+        // redirectUrl: `https://app.slack.com/client/T03E34GGWE5/D05SELC7KGV`,
         clientName: "Demo app",
         handleRedirect: (url: any) => res.redirect(url),
     });
@@ -64,18 +65,23 @@ expressReceiver.app.get("/login/callback", async (req: Request, res: Response) =
     await session?.handleIncomingRedirect(`${BASE_URL}${req.url}`);
 
     if (session?.info.webId) {
-        sharedSessions[session?.info.webId] = session
+        sharedSessions["BOT_USER"] = session
+        // sharedSessions[session?.info.webId] = session
     }
 
     if (session?.info.isLoggedIn) {
-        (req as any).webId = "webId"
-        return res.send(`<p>Logged in with the WebID ${session.info.webId}.</p>`)
+        // (req as any).webId = "webId"
+        return res.redirect(`https://app.slack.com/client/T03E34GGWE5/D05SELC7KGV`);
+        // return res.send(`<p>Logged in with the WebID ${session.info.webId}.</p>`)
+
     }
 });
 
 expressReceiver.app.get("/logout", async (req: Request, res: Response, next: NextFunction) => {
     const session = await getSessionFromStorage(req.session?.sessionId);
     session?.logout();
+    sharedSessions["BOT_USER"] = undefined
+
     res.send(`<p>Logged out.</p>`);
 });
 

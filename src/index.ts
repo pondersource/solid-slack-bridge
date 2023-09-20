@@ -1,10 +1,10 @@
 require('dotenv').config();
 
-import { Session } from "@inrupt/solid-client-authn-node";
+import { Session, getSessionFromStorage } from "@inrupt/solid-client-authn-node";
 import { App, LogLevel } from "@slack/bolt";
 import { BASE_URL, PORT } from "./config/default";
 import { expressReceiver } from "./expressReceiver";
-import { sharedSessions } from "./sharedSessions";
+import { sessionStore } from "./sharedSessions";
 import { IMessage } from "./types";
 import { createUserMessage } from "./utils";
 
@@ -28,13 +28,12 @@ const app = new App({
 });
 
 app.message(async ({ message, say, context }) => {
-  // TODO get slack user ID from the message
-  // const sessionId = storageProvider.getSessionId(slackUUID);
-  // const storage = storageProvider.getStorage(slackUUID);
-  // const session = await getSessionFromStorage(sessionId, storage)
-  // This deprecates the line below \/
-  const session = sharedSessions["BOT_USER"] as Session
   const _message = message as IMessage;
+
+  const slackUUID = _message.user;
+  const session = await sessionStore.getSession(slackUUID);
+  // This deprecates the line below \/
+  // const session = sharedSessions["BOT_USER"] as Session
   console.log("----------onMessage-----------");
   if (session) {
     try {
@@ -44,7 +43,7 @@ app.message(async ({ message, say, context }) => {
       console.log(error.message);
     }
   } else {
-    say(`You are not logein in, please visit ${BASE_URL}/login first`)
+    say(`You are not logein in, please visit ${BASE_URL}/login?slackUUID=${slackUUID} first`)
   }
 });
 

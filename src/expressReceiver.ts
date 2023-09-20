@@ -4,7 +4,7 @@ import express, { NextFunction, Request, Response } from "express"
 const cookieSession = require("cookie-session");
 import { BASE_URL } from "./config/default";
 import { Session, getSessionFromStorage, getSessionIdFromStorageAll } from "@inrupt/solid-client-authn-node";
-import { sharedSessions } from "./sharedSessions";
+import { sessionStore } from "./sharedSessions";
 
 
 export const expressReceiver = new ExpressReceiver({
@@ -45,13 +45,14 @@ expressReceiver.app.get("/", async (req: Request, res: Response, next: NextFunct
 
 expressReceiver.app.get("/login", async (req: Request, res: Response) => {
     const session = new Session();
+    const slackUUID = req.query.slackUUID as string;
 
     if (req.session) req.session.sessionId = session.info.sessionId;
 
     await session.login({
         oidcIssuer: "https://solidcommunity.net",
         // oidcIssuer: "https://login.inrupt.com",
-        redirectUrl: `${BASE_URL}/login/callback`,
+        redirectUrl: `${BASE_URL}/login/callback?slackUUID=${slackUUID}`,
         // redirectUrl: `https://app.slack.com/client/T03E34GGWE5/D05SELC7KGV`,
         clientName: "Demo app",
         handleRedirect: (url: any) => res.redirect(url),
@@ -65,10 +66,10 @@ expressReceiver.app.get("/login/callback", async (req: Request, res: Response) =
     await session?.handleIncomingRedirect(`${BASE_URL}${req.url}`);
     
     if (session?.info.webId) {
-        // TODO Request must have a slack user ID here
-        // storageProvider.saveSession(slackUUID, session?.info)
-
-        sharedSessions["BOT_USER"] = session
+        const slackUUID = req.query.slackUUID as string;
+        sessionStore.saveSession(slackUUID, session);
+        
+        // sharedSessions["BOT_USER"] = session
         // sharedSessions[session?.info.webId] = session
     }
 
@@ -83,7 +84,7 @@ expressReceiver.app.get("/login/callback", async (req: Request, res: Response) =
 expressReceiver.app.get("/logout", async (req: Request, res: Response, next: NextFunction) => {
     const session = await getSessionFromStorage(req.session?.sessionId);
     session?.logout();
-    sharedSessions["BOT_USER"] = undefined
+    // sharedSessions["BOT_USER"] = undefined
 
     res.send(`<p>Logged out.</p>`);
 });

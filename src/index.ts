@@ -12,8 +12,10 @@ import { createUserMessage } from "./utils";
 const app = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
   token: process.env.SLACK_BOT_USER_TOKEN,
+  appToken: process.env.SLACK_APP_TOKEN,
+  socketMode: true,
   logLevel: LogLevel.DEBUG,
-  receiver: expressReceiver,
+  // receiver: expressReceiver,
   // customRoutes: [
   //   {
   //     path: '/post',
@@ -29,7 +31,6 @@ const app = new App({
 
 app.message(async ({ message, say, context }) => {
   const _message = message as IMessage;
-
   const slackUUID = _message.user;
   const session = await sessionStore.getSession(slackUUID);
   // This deprecates the line below \/

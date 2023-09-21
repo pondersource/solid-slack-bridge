@@ -1,6 +1,7 @@
 import 'dotenv/config'
 
 export const PORT = process.env.PORT || 8000
+export const SERVER_PORT = process.env.SERVER_PORT || 8000
 
 export const BASE_URL = process.env.BASE_URL
 

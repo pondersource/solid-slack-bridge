@@ -1,54 +1,38 @@
-require('dotenv').config();
+// require("dotenv").config();
 
-import { Session, getSessionFromStorage } from "@inrupt/solid-client-authn-node";
-import { App, LogLevel } from "@slack/bolt";
-import { BASE_URL, PORT } from "./config/default";
-import { expressReceiver } from "./expressReceiver";
-import { sessionStore } from "./sharedSessions";
+import { App } from "@slack/bolt";
+import { apiClient } from "./apiClient";
+import { PORT } from "./config/default";
 import { IMessage } from "./types";
-import { createUserMessage } from "./utils";
-
+import { logger } from "./utils/logger";
+import { expressApp } from "./express";
 
 const app = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
   token: process.env.SLACK_BOT_USER_TOKEN,
   appToken: process.env.SLACK_APP_TOKEN,
   socketMode: true,
-  logLevel: LogLevel.DEBUG,
-  // receiver: expressReceiver,
-  // customRoutes: [
-  //   {
-  //     path: '/post',
-  //     method: ['POST'],
-  //     handler: async (req, res) => {
-  //       const body = await getBody(req)
-  //       res.writeHead(200);
-  //       res.end(JSON.stringify(JSON.parse(body as any)));
-  //     },
-  //   },
-  // ],
 });
 
 app.message(async ({ message, say, context }) => {
-  const _message = message as IMessage;
-  const slackUUID = _message.user;
-  const session = await sessionStore.getSession(slackUUID);
-  // This deprecates the line below \/
-  // const session = sharedSessions["BOT_USER"] as Session
-  console.log("----------onMessage-----------");
-  if (session) {
-    try {
-      // await createMessage({ messageBody: _message, session: sharedSessions });
-      await createUserMessage({ session, messageBody: _message })
-    } catch (error: any) {
-      console.log(error.message);
+  logger.info("----------onMessage-----------");
+  const slackUUID = (message as IMessage).user;
+  const url = `http://localhost:8080/write-to-pod`
+  try {
+    const res = await apiClient.post(url, message);
+    logger.info(res.data, "res.data")
+  } catch (error: any) {
+    logger.info(error.response.data, "error.response.data")
+    if (error.response.status === 401) {
+      say(`You are not Authenticated, please visit http://localhost:8080/login?slackUUID=${slackUUID} first`);
     }
-  } else {
-    say(`You are not logein in, please visit ${BASE_URL}/login?slackUUID=${slackUUID} first`)
   }
 });
 
+// expressApp.use(app);
+
+
 (async () => {
   await app.start(PORT);
-  console.log("⚡️ Bolt app started");
+  logger.info("⚡️ Bolt app started");
 })();

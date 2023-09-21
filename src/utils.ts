@@ -16,6 +16,7 @@ import { ParamsIncomingMessage } from "@slack/bolt/dist/receivers/ParamsIncoming
 import axios from "axios";
 import { IMessage } from "./types";
 import { Session } from "@inrupt/solid-client-authn-node";
+import { IncomingMessage, ServerResponse } from "http";
 
 
 export const getChatIndexUrl = async ({ session, chatID }: { session: Session, chatID: string }) => {
@@ -139,4 +140,22 @@ export async function createChatHttp(msg: IMessage) {
     console.log("...............");
     console.log(resp.data);
     console.log("...............");
+}
+
+
+
+
+export const getReqQuery = (req: ParamsIncomingMessage) => {
+    let q = req.url?.split('?')
+    let result: any = {};
+    if (q && q.length && q.length >= 2) {
+        q[1].split('&').forEach((item) => {
+            try {
+                result[item.split('=')[0]] = item.split('=')[1];
+            } catch (e) {
+                result[item.split('=')[0]] = '';
+            }
+        })
+    }
+    return result;
 }

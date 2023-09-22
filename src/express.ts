@@ -1,5 +1,5 @@
 import express, { NextFunction, Request, Response } from "express";
-import { SERVER_PORT } from "./config/default";
+import { SERVER_BASE_URL, SERVER_PORT } from "./config/default";
 import { sessionStore } from "./sharedSessions";
 import { IMessage } from "./types";
 import { createUserMessage } from "./utils";
@@ -43,9 +43,9 @@ app.get("/login", async (req: Request, res: Response) => {
   if (req.session) req.session.sessionId = session.info.sessionId;
 
   await session.login({
-    // oidcIssuer: "https://solidcommunity.net",
-    oidcIssuer: "https://login.inrupt.com",
-    redirectUrl: `http://localhost:8080/login/callback?slackUUID=${slackUUID}`,
+    oidcIssuer: "https://solidcommunity.net",
+    // oidcIssuer: "https://login.inrupt.com",
+    redirectUrl: `${SERVER_BASE_URL}/login/callback?slackUUID=${slackUUID}`,
     // redirectUrl: `${BASE_URL}/login/callback?slackUUID=${slackUUID}`,
     // redirectUrl: `https://app.slack.com/client/T03E34GGWE5/D05SELC7KGV`,
     clientName: "Solid Slack Bridge",
@@ -56,7 +56,7 @@ app.get("/login", async (req: Request, res: Response) => {
 app.get("/login/callback", async (req: Request, res: Response) => {
   const session = await getSessionFromStorage(req.session?.sessionId);
 
-  await session?.handleIncomingRedirect(`http://localhost:8080${req.url}`);
+  await session?.handleIncomingRedirect(`${SERVER_BASE_URL}${req.url}`);
 
   if (session?.info.webId) {
     const slackUUID = req.query.slackUUID as string;
@@ -98,6 +98,6 @@ app.post("/write-to-pod", async (req, res) => {
   }
 });
 
-app.listen(SERVER_PORT, () => logger.info(`Running on port http://localhost:${SERVER_PORT}`));
+// app.listen(SERVER_PORT, () => logger.info(`Running on port http://localhost:${SERVER_PORT}`));
 
 export const expressApp = app;

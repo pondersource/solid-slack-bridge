@@ -72,7 +72,7 @@ export const createMessage = async ({ messageBody }: { messageBody: IMessage }) 
     console.log("Dataset updated");
 };
 
-export const createUserMessage = async ({ messageBody, session }: { messageBody: IMessage, session: Session }) => {
+export const createUserMessage = async ({ messageBody, maker, session }: { messageBody: IMessage, maker?: string, session: Session }) => {
     const { text, ts, channel, user } = messageBody
     const indexUrl = await getChatIndexUrl({ session, chatID: channel })
     console.log("🚀 ~ file: utils.ts:70 ~ createUserMessage ~ indexUrl:", indexUrl)
@@ -82,7 +82,7 @@ export const createUserMessage = async ({ messageBody, session }: { messageBody:
     let message
     message = addDatetime(createThing(), "http://purl.org/dc/terms/created", new Date());
     message = addStringNoLocale(message, "http://rdfs.org/sioc/ns#content", text);
-    message = addNamedNode(message, "http://xmlns.com/foaf/0.1/maker", namedNode("https://solid-crud-tests-example-1.solidcommunity.net/profile/card#me"));
+    message = addNamedNode(message, "http://xmlns.com/foaf/0.1/maker", namedNode(maker!));
 
     dataset = setThing(dataset!, message);
 

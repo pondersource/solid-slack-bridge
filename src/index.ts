@@ -18,22 +18,19 @@ const app = new App({
 
 app.message(async ({ message, say, context }) => {
   logger.info("----------onMessage-----------");
+  const {members} = await app.client.conversations.members({ channel: message.channel });
   const slackUUID = (message as IMessage).user;
   const session = await sessionStore.getSession(slackUUID);
-  // const url = `${SERVER_BASE_URL}/write-to-pod`
-  // try {
-  //   const res = await apiClient.post(url, message);
-  //   logger.info(res.data, "res.data")
-  // } catch (error: any) {
-  //   logger.info(error.response.data, "error.response.data")
-  //   if (error.response.status === 401) {
-  //     say(`You are not Authenticated, please visit ${SERVER_BASE_URL}/login?slackUUID=${slackUUID} first`);
-  //   }
-  // }
   if (session) {
     logger.info("----------hasSession-----------");
     try {
-      await createUserMessage({ session, messageBody: message as IMessage });
+      members?.forEach(async (member) => {
+        let memberSession = await sessionStore.getSession(member);
+
+        if (memberSession) {
+          await createUserMessage({ session: memberSession, maker: session.info.webId, messageBody: message as IMessage });
+        }
+      });
     } catch (error: any) {
       console.log(error.message);
     }

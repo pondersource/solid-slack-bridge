@@ -16,9 +16,16 @@ const app = new App({
   socketMode: true,
 });
 
+
+
+app.command("/solid-login", async ({ command, ack ,}) => {
+  await ack(`${SERVER_BASE_URL}/login?slackUUID=${command.user_id}`)
+});
+
+
 app.message(async ({ message, say, context }) => {
   logger.info("----------onMessage-----------");
-  const {members} = await app.client.conversations.members({ channel: message.channel });
+  const { members } = await app.client.conversations.members({ channel: message.channel });
   const slackUUID = (message as IMessage).user;
   const session = await sessionStore.getSession(slackUUID);
   if (session) {

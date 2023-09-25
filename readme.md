@@ -9,11 +9,15 @@
 
 ```yaml
 display_information:
-  name: test app
+  name: socket_app
 features:
   bot_user:
-    display_name: test app
+    display_name: socket_app
     always_online: false
+  slash_commands:
+    - command: /solid-login
+      description: Login to your Solid IDP
+      should_escape: false
 oauth_config:
   scopes:
     user:
@@ -38,9 +42,10 @@ oauth_config:
       - mpim:write
       - mpim:write.invites
       - groups:read
+      - commands
 settings:
   event_subscriptions:
-    request_url: https://8000-pondersourc-solidslackb-19lrfyhegf9.ws-eu104.gitpod.io/slack/events
+    request_url: <BASE_URL>/slack/events
     user_events:
       - message.channels
       - message.groups
@@ -55,3 +60,5 @@ settings:
   socket_mode_enabled: true
   token_rotation_enabled: false
 ```
+
+## we dont need the settings.event_subscriptions.request_url, cause we using the socket mode

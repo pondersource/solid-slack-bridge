@@ -26,9 +26,7 @@ app.command("/solid-login", async ({ command, ack ,}) => {
 app.message(async ({ message, say, context }) => {
   logger.info("----------onMessage-----------");
   const { members } = await app.client.conversations.members({ channel: message.channel });
-  console.log("🚀 ~ file: index.ts:27 ~ app.message ~ members:", members)
   const slackUUID = (message as IMessage).user;
-  console.log("🚀 ~ file: index.ts:46 ~ app.message ~ slackUUID:", slackUUID)
   const session = await sessionStore.getSession(slackUUID);
   if (session) {
     logger.info("----------hasSession-----------");

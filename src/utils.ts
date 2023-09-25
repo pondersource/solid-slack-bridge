@@ -3,6 +3,7 @@ import {
     addStringNoLocale,
     createThing,
     getThing,
+    getThingAll,
     addNamedNode,
     getSolidDataset,
     saveSolidDatasetAt,
@@ -18,6 +19,19 @@ import { IMessage } from "./types";
 import { Session } from "@inrupt/solid-client-authn-node";
 import { IncomingMessage, ServerResponse } from "http";
 
+export const getAllsChats = async ({ session }: { session: Session }) => {
+    const pods = await getPodUrlAll(session.info.webId!, { fetch: session.fetch });
+    const chatsContainerURL = `${pods[0]}shops/Chat/`;
+    const chatContainer = await getSolidDataset(chatsContainerURL, { fetch: session.fetch });
+    let allThings = await getThingAll(chatContainer);
+    allThings = allThings.filter(thing => {
+        return thing.url.length > chatsContainerURL.length;
+    });
+    const names = allThings.map(thing => {
+        return thing.url.substring(chatsContainerURL.length, thing.url.length - 1);
+    });
+    return names;
+};
 
 export const getChatIndexUrl = async ({ session, chatID }: { session: Session, chatID: string }) => {
     const pods = await getPodUrlAll(session.info.webId!, { fetch: session.fetch });

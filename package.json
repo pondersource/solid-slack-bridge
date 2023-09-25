@@ -19,6 +19,7 @@
   "dependencies": {
     "@inrupt/solid-client": "^1.30.0",
     "@inrupt/solid-client-authn-node": "^1.17.1",
+    "@inrupt/solid-client-notifications": "^1.3.1",
     "@inrupt/vocab-common-rdf": "^1.0.5",
     "@inrupt/vocab-solid": "^1.0.4",
     "@slack/bolt": "^3.13.3",

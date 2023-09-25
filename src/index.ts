@@ -16,10 +16,29 @@ const app = new App({
   socketMode: true,
 });
 
+
+
+app.command("/solid-login", async ({ command, ack ,}) => {
+  await ack(`${SERVER_BASE_URL}/login?slackUUID=${command.user_id}`)
+
+  // channel_id = command.channel_id
+  // user_id = command.user_id
+
+  // await app.client.chat.postEphemeral({
+  //   token: BOT_TOKEN,
+  //   channel: channel_id,
+  //   user: user_id,
+  //   text: "hi"
+  // });
+});
+
+
 app.message(async ({ message, say, context }) => {
   logger.info("----------onMessage-----------");
-  const {members} = await app.client.conversations.members({ channel: message.channel });
+  const { members } = await app.client.conversations.members({ channel: message.channel });
+  console.log("🚀 ~ file: index.ts:27 ~ app.message ~ members:", members)
   const slackUUID = (message as IMessage).user;
+  console.log("🚀 ~ file: index.ts:46 ~ app.message ~ slackUUID:", slackUUID)
   const session = await sessionStore.getSession(slackUUID);
   if (session) {
     logger.info("----------hasSession-----------");

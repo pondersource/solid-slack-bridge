@@ -20,16 +20,6 @@ const app = new App({
 
 app.command("/solid-login", async ({ command, ack ,}) => {
   await ack(`${SERVER_BASE_URL}/login?slackUUID=${command.user_id}`)
-
-  // channel_id = command.channel_id
-  // user_id = command.user_id
-
-  // await app.client.chat.postEphemeral({
-  //   token: BOT_TOKEN,
-  //   channel: channel_id,
-  //   user: user_id,
-  //   text: "hi"
-  // });
 });
 
 

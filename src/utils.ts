@@ -19,6 +19,12 @@ import { IMessage } from "./types";
 import { Session } from "@inrupt/solid-client-authn-node";
 import { IncomingMessage, ServerResponse } from "http";
 
+export const getChatsIndexURLs = async ({ session, ids }: { session: Session, ids: string[] }) => {
+    const pods = await getPodUrlAll(session.info.webId!, { fetch: session.fetch });
+    const baseURL = `${pods[0]}shops/Chat/`;
+    return ids.map(id => baseURL + id + '/index.tts');
+};
+
 export const getAllsChats = async ({ session }: { session: Session }) => {
     const pods = await getPodUrlAll(session.info.webId!, { fetch: session.fetch });
     const chatsContainerURL = `${pods[0]}shops/Chat/`;

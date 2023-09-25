@@ -1,6 +1,6 @@
 // require("dotenv").config();
 
-import { App } from "@slack/bolt";
+import { slackApp } from "./slackApp";
 import { apiClient } from "./apiClient";
 import { PORT, SERVER_BASE_URL, SERVER_PORT } from "./config/default";
 import { IMessage } from "./types";
@@ -9,23 +9,15 @@ import { expressApp } from "./express";
 import { sessionStore } from "./sharedSessions";
 import { createUserMessage } from "./utils";
 
-const app = new App({
-  signingSecret: process.env.SLACK_SIGNING_SECRET,
-  token: process.env.SLACK_BOT_USER_TOKEN,
-  appToken: process.env.SLACK_APP_TOKEN,
-  socketMode: true,
-});
-
-
-
-app.command("/solid-login", async ({ command, ack ,}) => {
+slackApp.command("/solid-login", async ({ command, ack ,}) => {
   await ack(`${SERVER_BASE_URL}/login?slackUUID=${command.user_id}`)
 });
 
 
-app.message(async ({ message, say, context }) => {
+slackApp.message(async ({ message, say, context }) => {
   logger.info("----------onMessage-----------");
-  const { members } = await app.client.conversations.members({ channel: message.channel });
+  console.log('NEW MESSAGE', message);
+  const { members } = await slackApp.client.conversations.members({ channel: message.channel });
   const slackUUID = (message as IMessage).user;
   const session = await sessionStore.getSession(slackUUID);
   if (session) {
@@ -51,7 +43,7 @@ app.message(async ({ message, say, context }) => {
 
 
 (async () => {
-  await app.start(PORT);
+  await slackApp.start(PORT);
   logger.info("⚡️ Bolt app started");
   await expressApp.listen(SERVER_PORT, () => logger.info(`Running on port http://localhost:${SERVER_PORT}`));
 })();

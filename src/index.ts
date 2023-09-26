@@ -1,13 +1,12 @@
 // require("dotenv").config();
 
 import { App } from "@slack/bolt";
-import { apiClient } from "./apiClient";
 import { PORT, SERVER_BASE_URL, SERVER_PORT } from "./config/default";
-import { IMessage } from "./types";
-import { logger } from "./utils/logger";
 import { expressApp } from "./express";
 import { sessionStore } from "./sharedSessions";
+import { IMessage } from "./types";
 import { createUserMessage, isUrlValid } from "./utils";
+import { logger } from "./utils/logger";
 
 const app = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
@@ -25,24 +24,26 @@ app.command("/solid-login", async ({ command, ack, }) => {
 
 app.message(async ({ message, say, context }) => {
   logger.info("----------onMessage-----------");
+  const { team } = await app.client.team.info()
 
   const { members } = await app.client.conversations.members({ channel: message.channel });
+  
   const slackUUID = (message as IMessage).user;
+  
   const session = await sessionStore.getSession(slackUUID);
 
   const userInfo = await app.client.users.info({ user: slackUUID })
+  
   const statusTextAsWebId = userInfo.user?.profile?.status_text ?? ""
 
-  // ====================
-  let maker: string | undefined = `https://slack.com/${slackUUID}`
+  let maker: string | undefined = `${team?.url}team/${slackUUID}`
 
   if (session) {
     maker = session.info.webId
   } else if (isUrlValid(statusTextAsWebId)) {
     maker = statusTextAsWebId
   }
-  
-  // ====================
+
   try {
     members?.forEach(async (member) => {
       let memberSession = await sessionStore.getSession(member);
@@ -55,35 +56,6 @@ app.message(async ({ message, say, context }) => {
   } catch (error: any) {
     console.log(error.message);
   }
-
-  // if (session) {
-  //   logger.info("----------hasSession-----------");
-  //   try {
-  //     members?.forEach(async (member) => {
-  //       let memberSession = await sessionStore.getSession(member);
-
-  //       if (memberSession) {
-  //         await createUserMessage({ session: memberSession, maker: session.info.webId, messageBody: message as IMessage });
-  //       }
-  //     });
-  //   } catch (error: any) {
-  //     console.log(error.message);
-  //   }
-  // } else {
-  //   logger.info("----------noSession-----------");
-
-  //   try {
-  //     members?.forEach(async (member) => {
-  //       let memberSession = await sessionStore.getSession(member);
-
-  //       if (memberSession) {
-  //         await createUserMessage({ session: memberSession, maker: session.info.webId, messageBody: message as IMessage });
-  //       }
-  //     });
-  //   } catch (error: any) {
-  //     console.log(error.message);
-  //   }
-  // }
 });
 
 

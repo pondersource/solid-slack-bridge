@@ -7,7 +7,7 @@ import { IMessage } from "./types";
 import { logger } from "./utils/logger";
 import { expressApp } from "./express";
 import { sessionStore } from "./sharedSessions";
-import { createUserMessage } from "./utils";
+import { createUserMessage, isUrlValid } from "./utils";
 
 const app = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
@@ -25,25 +25,65 @@ app.command("/solid-login", async ({ command, ack, }) => {
 
 app.message(async ({ message, say, context }) => {
   logger.info("----------onMessage-----------");
+
   const { members } = await app.client.conversations.members({ channel: message.channel });
   const slackUUID = (message as IMessage).user;
   const session = await sessionStore.getSession(slackUUID);
-  if (session) {
-    logger.info("----------hasSession-----------");
-    try {
-      members?.forEach(async (member) => {
-        let memberSession = await sessionStore.getSession(member);
 
-        if (memberSession) {
-          await createUserMessage({ session: memberSession, maker: session.info.webId, messageBody: message as IMessage });
-        }
-      });
-    } catch (error: any) {
-      console.log(error.message);
-    }
-  } else {
-    logger.info("----------noSession-----------");
+  const userInfo = await app.client.users.info({ user: slackUUID })
+  const statusTextAsWebId = userInfo.user?.profile?.status_text ?? ""
+
+  // ====================
+  let maker: string | undefined = `https://slack.com/${slackUUID}`
+
+  if (session) {
+    maker = session.info.webId
+  } else if (isUrlValid(statusTextAsWebId)) {
+    maker = statusTextAsWebId
   }
+  
+  // ====================
+  try {
+    members?.forEach(async (member) => {
+      let memberSession = await sessionStore.getSession(member);
+
+      // member has active session, so we write to the pod
+      if (memberSession) {
+        await createUserMessage({ session: memberSession, maker, messageBody: message as IMessage });
+      }
+    });
+  } catch (error: any) {
+    console.log(error.message);
+  }
+
+  // if (session) {
+  //   logger.info("----------hasSession-----------");
+  //   try {
+  //     members?.forEach(async (member) => {
+  //       let memberSession = await sessionStore.getSession(member);
+
+  //       if (memberSession) {
+  //         await createUserMessage({ session: memberSession, maker: session.info.webId, messageBody: message as IMessage });
+  //       }
+  //     });
+  //   } catch (error: any) {
+  //     console.log(error.message);
+  //   }
+  // } else {
+  //   logger.info("----------noSession-----------");
+
+  //   try {
+  //     members?.forEach(async (member) => {
+  //       let memberSession = await sessionStore.getSession(member);
+
+  //       if (memberSession) {
+  //         await createUserMessage({ session: memberSession, maker: session.info.webId, messageBody: message as IMessage });
+  //       }
+  //     });
+  //   } catch (error: any) {
+  //     console.log(error.message);
+  //   }
+  // }
 });
 
 

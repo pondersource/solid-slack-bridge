@@ -18,7 +18,7 @@ const app = new App({
 
 
 
-app.command("/solid-login", async ({ command, ack ,}) => {
+app.command("/solid-login", async ({ command, ack, }) => {
   await ack(`${SERVER_BASE_URL}/login?slackUUID=${command.user_id}`)
 });
 
@@ -43,7 +43,6 @@ app.message(async ({ message, say, context }) => {
     }
   } else {
     logger.info("----------noSession-----------");
-    say(`You are not Authenticated, please visit ${SERVER_BASE_URL}/login?slackUUID=${slackUUID} first`);
   }
 });
 

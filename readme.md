@@ -14,18 +14,23 @@ oauth_config:
   scopes:
     user:
       - channels:history
-      - groups:history
-      - im:history
-      - mpim:history
       - channels:read
+      - groups:history
       - groups:read
+      - im:history
       - im:read
+      - mpim:history
       - mpim:read
+      - users.profile:read
+      - users:read
+      - team:read
     bot:
       - channels:history
       - channels:join
       - channels:read
       - chat:write
+      - commands
+      - groups:read
       - im:history
       - im:read
       - im:write
@@ -33,8 +38,9 @@ oauth_config:
       - mpim:read
       - mpim:write
       - mpim:write.invites
-      - groups:read
-      - commands
+      - users.profile:read
+      - users:read
+      - team:read
 settings:
   event_subscriptions:
     request_url: <BASE_URL>/slack/events

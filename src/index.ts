@@ -13,11 +13,11 @@ const app = new App({
   socketMode: true,
   customRoutes: [
     {
-      path: '/health-check',
+      path: '/hc',
       method: ['GET'],
       handler: (req, res) => {
         res.writeHead(200);
-        res.end(`Things are going just fine at ${req.headers.host}!`);
+        res.end("OK");
       },
     }
   ],
@@ -27,10 +27,11 @@ const app = new App({
 
 
 app.command("/solid-login", async ({ command, ack, }) => {
-  const { team } = await app.client.team.info()
-  const slackDomain = team?.url
+  // const { team } = await app.client.team.info()
 
-  await ack(`${SERVER_BASE_URL}/login?slackUUID=${command.user_id}&slackDomain=${slackDomain}`)
+  // const slackDomain = team?.url?.replace("https://", "")
+
+  await ack(`${SERVER_BASE_URL}/login?slackUUID=${command.user_id}`)
 });
 
 

@@ -1,5 +1,9 @@
 import { Session } from "@inrupt/solid-client-authn-node";
 import { WebsocketNotification } from "@inrupt/solid-client-notifications";
+import {
+  getSolidDataset,
+  isRawData
+} from "@inrupt/solid-client";
 import { getChatsIndexURLs } from "./utils";
 import { slackApp } from "./slackApp";
 
@@ -24,13 +28,24 @@ export class SessionStore {
     });
 
     const channelIds: string[] = channels ? channels.map(channel => channel.id ? channel.id : '') : [];
-    const datasetURLs = getChatsIndexURLs({session, ids: channelIds});
+    const datasetURLs = await getChatsIndexURLs({session, ids: channelIds});
 
-    // if ()
-    // const websocket = new WebsocketNotification(
-    //   containerUrl,
-    //   { fetch: fetch }
-    // );
+    datasetURLs.forEach(async datasetURL => {
+      try {
+        const chatDataset = await getSolidDataset(datasetURL, { fetch: session.fetch });
+        
+        const websocket = new WebsocketNotification(
+          datasetURL,
+          { fetch: session.fetch }
+        );
+        websocket.on('message', arg => {
+          console.log('WE HAVE UPDATE', arg);
+        });
+        websocket.connect();
+      } catch (e) {
+        // Assuming the error is 404: Container not yet created for this channel
+      }
+    });
   }
 
 }

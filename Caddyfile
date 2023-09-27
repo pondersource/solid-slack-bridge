@@ -2,6 +2,9 @@
     email soltanireza65@gmail.com
 }
 
-slack-bridge.pondersource.net {
+sb-bot.pondersource.net {
+    reverse_proxy solidslackbridge:8000
+}
+sb-web.pondersource.net {
     reverse_proxy solidslackbridge:8080
 }

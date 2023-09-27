@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "pm2": "pm2 start dist/index.js --name kube-as-service-api",
+    "pm2": "pm2 start dist/index.js --name solid-slack-bridge",
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts",
     "build": "tsc --build tsconfig.json",

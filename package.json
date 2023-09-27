@@ -8,8 +8,6 @@
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts",
     "live": "ngrok http --domain=guiding-bull-tidy.ngrok-free.app 8000",
-    "fastify:dev": "nodemon src/fastify-main.ts",
-    "express:dev": "nodemon src/fastify-main.ts",
     "build": "tsc --build tsconfig.json",
     "typecheck": "tsc --noEmit"
   },

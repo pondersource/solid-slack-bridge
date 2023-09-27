@@ -67,7 +67,7 @@ app.message(async ({ message, say, context }) => {
       }
     });
   } catch (error: any) {
-    console.log(error.message);
+    logger.error(error.message);
   }
 });
 

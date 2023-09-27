@@ -1,6 +1,7 @@
 import type { IStorage } from "@inrupt/solid-client-authn-core";
 import { InMemoryStorage } from "@inrupt/solid-client-authn-core";
 import type { ISessionInfo } from "@inrupt/solid-client-authn-core";
+import { logger } from "../utils/logger";
 
 export class StorageProvider {
     private sessionIds: Record<string, string> = {};
@@ -19,7 +20,7 @@ export class StorageProvider {
 
         // Inspiration for these lines taken from: https://github.com/inrupt/solid-client-authn-js/blob/2eea2529a95deaaf345051d4b3b5dc6a9650c41b/packages/node/src/sessionInfo/SessionInfoManager.ts#L47
         if (sessionInfo.webId) {
-            console.log('WEBID', sessionInfo.webId);
+            logger.info('WEBID', sessionInfo.webId);
             this.storages[slackUUID].set('webId', sessionInfo.webId);
         }
 
@@ -32,7 +33,7 @@ export class StorageProvider {
 
     getStorage(slackUUID: string): IStorage {
         if (!this.storages[slackUUID]) {
-            console.log('CREATED STORAGEEEEEEEEEEEEEEEEEEEEEEEEEE')
+            logger.info('CREATED STORAGEEEEEEEEEEEEEEEEEEEEEEEEEE')
             this.storages[slackUUID] = new InMemoryStorage();
         }
 

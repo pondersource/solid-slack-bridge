@@ -23,9 +23,9 @@ services:
       - 443:443
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
-      - ./site:/srv
-      - ./data/caddy_data:/data
-      - ./data/caddy_config:/config
+      # - ./site:/srv
+      # - ./data/caddy_data:/data
+      # - ./data/caddy_config:/config
     networks:
       - ssb
 networks:

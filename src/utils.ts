@@ -21,7 +21,7 @@ import { IncomingMessage, ServerResponse } from "http";
 
 export const getChatIndexUrl = async ({ session, chatID }: { session: Session, chatID: string }) => {
     const pods = await getPodUrlAll(session.info.webId!, { fetch: session.fetch });
-    return `${pods[0]}shops/Chat/${chatID}/index.tts`;
+    return `${pods[0]}shops/Chat/${chatID}/index.ttl`;
 };
 
 

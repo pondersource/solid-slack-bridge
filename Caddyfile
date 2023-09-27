@@ -1,0 +1,7 @@
+{
+    email soltanireza65@gmail.com
+}
+
+slack-bridge.pondersource.net {
+    reverse_proxy solidslackbridge:8080
+}

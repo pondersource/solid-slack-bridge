@@ -10,3 +10,19 @@ services:
       NODE_ENV: production
     ports:
       - 3000:3000
+  caddy:
+    image: caddy:latest
+    restart: unless-stopped
+    container_name: caddy
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./site:/srv
+      - ./data/caddy_data:/data
+      - ./data/caddy_config:/config
+    networks:
+      - ssb
+networks:
+  ssb:

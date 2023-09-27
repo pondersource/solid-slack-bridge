@@ -2,13 +2,14 @@
 
 git pull
 
+echo "..."
 
 # if [ "$DEPLOY_MODE" == "--clean" ]; then
 #     sudo docker stop $(docker ps -a -q)
 #     sudo docker rm $(docker ps -a -q)
 # fi
 
-docker volume create caddy_data
-docker volume create portainer-data
+# docker volume create caddy_data
+# docker volume create portainer-data
 
-sudo docker compose up -d --build
+# sudo docker compose up -d --build

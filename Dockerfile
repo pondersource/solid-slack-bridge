@@ -1,11 +1,22 @@
-FROM node:lts-alpine
-ENV NODE_ENV=production
-WORKDIR /usr/src/app
-COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "./"]
-# RUN npm install --production --silent && mv node_modules ../
-RUN npm install
+FROM node:lts
+# ENV NODE_ENV=production
+WORKDIR /app
 COPY . .
-EXPOSE 8080
-RUN chown -R node /usr/src/app
-USER node
-CMD ["npm", "run", "dev"]
+# COPY ["package.json", "package-lock.json", "tsconfig.json", "./"]
+# COPY src ./src
+RUN ls -al
+RUN npm install
+RUN npm run build
+CMD ["npm","run", "start"]
+
+# ## this is stage two , where the app actually runs
+# FROM node:alpine
+# WORKDIR /app
+# # COPY package.json ./
+# COPY --from=0 /app .
+# RUN ls -a
+# RUN npm install pm2 -g
+# # EXPOSE 8000
+# CMD ["npm","run", "pm2"]
+# CMD ["pm2-runtime","index.js"]
+# RUN pm2 start index.js --name solid-slack-bridge

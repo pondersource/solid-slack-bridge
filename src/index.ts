@@ -1,5 +1,3 @@
-// require("dotenv").config();
-
 import { App } from "@slack/bolt";
 import { PORT, SERVER_BASE_URL, SERVER_PORT } from "./config/default";
 import { expressApp } from "./express";
@@ -13,6 +11,17 @@ const app = new App({
   token: process.env.SLACK_BOT_USER_TOKEN,
   appToken: process.env.SLACK_APP_TOKEN,
   socketMode: true,
+  customRoutes: [
+    {
+      path: '/health-check',
+      method: ['GET'],
+      handler: (req, res) => {
+        res.writeHead(200);
+        res.end(`Things are going just fine at ${req.headers.host}!`);
+      },
+    }
+  ],
+  port: PORT
 });
 
 
@@ -27,13 +36,13 @@ app.message(async ({ message, say, context }) => {
   const { team } = await app.client.team.info()
 
   const { members } = await app.client.conversations.members({ channel: message.channel });
-  
+
   const slackUUID = (message as IMessage).user;
-  
+
   const session = await sessionStore.getSession(slackUUID);
 
   const userInfo = await app.client.users.info({ user: slackUUID })
-  
+
   const statusTextAsWebId = userInfo.user?.profile?.status_text ?? ""
 
   let maker: string | undefined = `${team?.url}team/${slackUUID}`

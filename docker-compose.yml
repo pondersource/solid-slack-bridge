@@ -10,6 +10,8 @@ services:
       NODE_ENV: production
     ports:
       - 3000:3000
+    networks:
+      - ssb
   caddy:
     image: caddy:latest
     restart: unless-stopped

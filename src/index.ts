@@ -27,7 +27,10 @@ const app = new App({
 
 
 app.command("/solid-login", async ({ command, ack, }) => {
-  await ack(`${SERVER_BASE_URL}/login?slackUUID=${command.user_id}`)
+  const { team } = await app.client.team.info()
+  const slackDomain = team?.url
+
+  await ack(`${SERVER_BASE_URL}/login?slackUUID=${command.user_id}&slackDomain=${slackDomain}`)
 });
 
 

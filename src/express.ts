@@ -39,13 +39,14 @@ app.get("/", async (req: Request, res: Response, next: NextFunction) => {
 app.get("/login", async (req: Request, res: Response) => {
   const session = new Session();
   const slackUUID = req.query.slackUUID as string;
+  const slackDomain = req.query.slackDomain as string;
 
   if (req.session) req.session.sessionId = session.info.sessionId;
 
   await session.login({
     oidcIssuer: "https://solidcommunity.net",
     // oidcIssuer: "https://login.inrupt.com",
-    redirectUrl: `${SERVER_BASE_URL}/login/callback?slackUUID=${slackUUID}`,
+    redirectUrl: `${SERVER_BASE_URL}/login/callback?slackUUID=${slackUUID}&slackDomain=${slackDomain}`,
     // redirectUrl: `${BASE_URL}/login/callback?slackUUID=${slackUUID}`,
     // redirectUrl: `https://app.slack.com/client/T03E34GGWE5/D05SELC7KGV`,
     clientName: "Solid Slack Bridge",
@@ -57,6 +58,7 @@ app.get("/login/callback", async (req: Request, res: Response) => {
   const session = await getSessionFromStorage(req.session?.sessionId);
 
   await session?.handleIncomingRedirect(`${SERVER_BASE_URL}${req.url}`);
+  const slackDomain = req.query.slackDomain as string;
 
   if (session?.info.webId) {
     const slackUUID = req.query.slackUUID as string;
@@ -64,7 +66,7 @@ app.get("/login/callback", async (req: Request, res: Response) => {
   }
 
   if (session?.info.isLoggedIn) {
-    // return res.redirect(`https://app.slack.com/client/T03E34GGWE5/D05SELC7KGV`);
+    // return res.redirect(slackDomain);
     return res.send(`<p>Logged in with the WebID ${session.info.webId}.</p>`);
   }
 });

@@ -28,9 +28,7 @@
     "express": "^4.18.2",
     "fastify": "^4.23.2",
     "pino": "^8.15.1",
-    "pino-pretty": "^10.2.0",
-    "soukai": "^0.5.1",
-    "soukai-solid": "^0.5.1"
+    "pino-pretty": "^10.2.0"
   },
   "devDependencies": {
     "@types/cookie-session": "^2.0.45",

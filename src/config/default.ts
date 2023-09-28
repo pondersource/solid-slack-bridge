@@ -10,3 +10,6 @@ export const SLACK_SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET
 export const SLACK_BOT_USER_TOKEN = process.env.SLACK_BOT_USER_TOKEN
 
 export const SLACK_DOMAIN = process.env.SLACK_DOMAIN ?? "https://pypracts.slack.com"
+
+export const CLIENT_ID = process.env.CLIENT_ID
+export const CLIENT_SECRET = process.env.CLIENT_SECRET

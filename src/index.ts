@@ -26,12 +26,93 @@ const app = new App({
 
 
 
-app.command("/solid-login", async ({ command, ack, }) => {
-  // const { team } = await app.client.team.info()
+app.command("/solid-login", async ({ command, ack, body, payload }) => {
 
-  // const slackDomain = team?.url?.replace("https://", "")
+  let loginURL = `${SERVER_BASE_URL}/login?slackUUID=${command.user_id}`
+  if (isUrlValid(payload.text)) {
+    loginURL = `${SERVER_BASE_URL}/login?slackUUID=${command.user_id}&loginURL=${payload.text}`
+  }
+  await ack(loginURL)
+});
 
-  await ack(`${SERVER_BASE_URL}/login?slackUUID=${command.user_id}`)
+app.view('YOUR_CALLBACK_ID', async ({ payload, ack, body, respond, }) => {
+  const IDP = payload.state.values.IDP_BLOCK.IDP_SELECT.selected_option?.value
+
+  let loginURL = `${SERVER_BASE_URL}/login?slackUUID=${body.user.id}`
+  if (IDP && isUrlValid(IDP)) {
+    loginURL = `${SERVER_BASE_URL}/login?slackUUID=${body.user.id}&loginURL=${IDP}`
+  }
+  await respond(loginURL)
+});
+
+// app.command('/solid-login', async ({ ack, body, client, logger }) => {
+//   // Acknowledge the command request
+//   await ack();
+
+//   try {
+//     // Call views.open with the built-in client
+//     const result = await client.views.open({
+//       // Pass a valid trigger_id within 3 seconds of receiving it
+//       trigger_id: body.trigger_id,
+//       // View payload
+//       view: {
+//         type: 'modal',
+//         // View identifier
+//         callback_id: 'YOUR_CALLBACK_ID',
+//         title: {
+//           type: 'plain_text',
+//           text: 'Select IDP'
+//         },
+//         blocks: [
+//           {
+//             "type": "section",
+//             "block_id": "IDP_BLOCK",
+//             "text": {
+//               "type": "mrkdwn",
+//               "text": "Select your Prefered IDP"
+//             },
+//             "accessory": {
+//               "action_id": "IDP_SELECT",
+//               "type": "static_select",
+//               "placeholder": {
+//                 "type": "plain_text",
+//                 "text": "Select an item"
+//               },
+//               "options": [
+//                 {
+//                   "text": {
+//                     "type": "plain_text",
+//                     "text": "login.inrupt.com"
+//                   },
+//                   "value": "https://login.inrupt.com"
+//                 },
+//                 {
+//                   "text": {
+//                     "type": "plain_text",
+//                     "text": "solidcommunity.net"
+//                   },
+//                   "value": "https://solidcommunity.net"
+//                 }
+//               ]
+//             }
+//           }
+//         ],
+//         submit: {
+//           type: 'plain_text',
+//           text: 'Login'
+//         }
+//       }
+//     });
+//     // logger.info(result);
+//   }
+//   catch (error) {
+//     logger.error(error);
+//   }
+// });
+
+app.command("/solid-logout", async ({ command, ack, body, payload }) => {
+  let loginURL = `${SERVER_BASE_URL}/logout?slackUUID=${command.user_id}`
+  await ack(loginURL)
 });
 
 

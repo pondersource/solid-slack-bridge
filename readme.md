@@ -16,15 +16,20 @@ After each Solid session is created, they are stored in a mapping from the user'
 On every new message event, first, the maker of that message is extracted. We either have a session for this Slack user, or they have set their Slack status to their webId or we'll just use a link to their profile on Slack. Then, the members of that Slack conversation are retrieved. For each member that has a Solid session, we add the message to their chat on their pod. If a chat does not already exist, we create it.
 
 ## How to run it yourself
-...
-
-app manifest sample
+1. Pick a domain to run the server on
+2. Open https://slack.com/ and sign in
+3. Open https://api.slack.com/
+4. On the top right corner: Your apps > Manage your apps
+5. Click "Create new app"
+6. Select "From an app manifest" and click Next
+7. Select a workspace for development and click Next
+8. Copy the app manifest below and paste it into the YAML box and click next. Do not forget to replce the `BASE_URL` in the manifest with your domain
 ```yaml
 display_information:
-  name: socket_app
+  name: Solid Slack Bridge
 features:
   bot_user:
-    display_name: socket_app
+    display_name: Solid Slack Bridge
     always_online: false
   slash_commands:
     - command: /solid-login
@@ -78,5 +83,7 @@ settings:
   socket_mode_enabled: true
   token_rotation_enabled: false
 ```
+9. Click "Create"
+10. In the "Install your app" section
 
 ## we dont need the settings.event_subscriptions.request_url, cause we using the socket mode

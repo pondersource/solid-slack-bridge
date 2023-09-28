@@ -73,7 +73,7 @@ app.get("/oauth", async (req: Request, res: Response) => {
 
   console.log('tokens', workspace, botToken, userToken);
 
-  // TODO Save tokens for this workspace in memory.
+  // TODO Start listening to events
 
   return res.send('<p>You\'re all set up. Enjoy the bridge! :-)</p>');
 });

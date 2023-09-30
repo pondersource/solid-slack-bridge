@@ -42,7 +42,9 @@ export const getOrCreateChatDataset = async ({ session, chatID }: { session: Ses
 export const createUserMessage = async ({ messageBody, maker, session }: { messageBody: IMessage, maker?: string, session: Session }) => {
     const { text, ts, channel, user } = messageBody
     const indexUrl = await getChatIndexUrl({ session, chatID: channel })
-
+    logger.info('.......');
+    logger.info(indexUrl);
+    logger.info('.......');
     let dataset = await getOrCreateChatDataset({ session, chatID: channel })
     // Create the message thing
     let message

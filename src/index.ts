@@ -1,4 +1,5 @@
 import { App } from "@slack/bolt";
+const { FileInstallationStore } = require('@slack/oauth');
 import { PORT, SERVER_BASE_URL, SERVER_PORT } from "./config/default";
 import { expressApp } from "./express";
 import { sessionStore } from "./sharedSessions";
@@ -8,23 +9,35 @@ import { logger } from "./utils/logger";
 
 const app = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
-  token: process.env.SLACK_BOT_USER_TOKEN,
-  appToken: process.env.SLACK_APP_TOKEN,
-  socketMode: true,
-  customRoutes: [
-    {
-      path: '/hc',
-      method: ['GET'],
-      handler: (req, res) => {
-        res.writeHead(200);
-        res.end("OK");
-      },
-    }
+  clientId: process.env.CLIENT_ID,
+  clientSecret: process.env.CLIENT_SECRET,
+  installationStore: new FileInstallationStore(),
+  redirectUri: SERVER_BASE_URL + 'oauth',
+  stateSecret: 'my-state-secret',
+  scopes: [
+    'channels:history',
+    'channels:join',
+    'channels:read',
+    'chat:write',
+    'commands',
+    'groups:read',
+    'im:history',
+    'im:read',
+    'im:write',
+    'mpim:history',
+    'mpim:read',
+    'mpim:write',
+    'mpim:write.invites',
+    'users.profile:read',
+    'users:read',
+    'team:read',
   ],
+  installerOptions: {
+    redirectUriPath: '/oauth',
+  },
+  //socketMode: true,
   port: PORT
 });
-
-
 
 app.command("/solid-login", async ({ command, ack, body, payload }) => {
 

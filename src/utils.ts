@@ -13,10 +13,8 @@ import {
 } from "@inrupt/solid-client";
 import { namedNode } from "@rdfjs/data-model";
 import { ParamsIncomingMessage } from "@slack/bolt/dist/receivers/ParamsIncomingMessage";
-import axios from "axios";
 import { IMessage } from "./types";
 import { Session } from "@inrupt/solid-client-authn-node";
-import { IncomingMessage, ServerResponse } from "http";
 import { logger } from "./utils/logger";
 
 

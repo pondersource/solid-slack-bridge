@@ -4,7 +4,6 @@ import { sessionStore } from "./sharedSessions";
 const cookieSession = require("cookie-session");
 const {
   getSessionFromStorage,
-  getSessionIdFromStorageAll,
   Session,
 } = require("@inrupt/solid-client-authn-node");
 

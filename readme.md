@@ -23,7 +23,7 @@ On every new message event, first, the maker of that message is extracted. We ei
 5. Click "Create new app"
 6. Select "From an app manifest" and click Next
 7. Select a workspace for development and click Next
-8. Copy the app manifest below and paste it into the YAML box and click next. Do not forget to replce the `BASE_URL` in the manifest with your domain
+8. Copy the app manifest below and paste it into the YAML box and click next. Do not forget to replce the `BASE_URL` in the manifest with your domain and port
 ```yaml
 display_information:
   name: Solid Slack Bridge
@@ -84,6 +84,17 @@ settings:
   token_rotation_enabled: false
 ```
 9. Click "Create"
-10. In the "Install your app" section
-
-## we dont need the settings.event_subscriptions.request_url, cause we using the socket mode
+10. In the "Install your app" section click "Install to Workspace"
+11. Under the "Basic Information" tab look for "App-Level Tokens" and click "Generate Token and Scopes"
+12. Pick any name for your token and Add the `connections:write` to the scopes and click "Generate"
+13. Make a copy of the `.env.example` file and name it `.env`. Fill it as follows:
+```
+PORT={the port number for bot connections to Slack}
+SERVER_PORT={the port for the server that will host the Solid login pages}
+SERVER_BASE_URL={your domain address}
+BASE_URL={your domain address}
+SLACK_SIGNING_SECRET={Basic Information > App Credentials > Signing Secret}
+SLACK_BOT_USER_TOKEN={Oauth & Permissions > Bot User OAuth Token}
+SLACK_APP_TOKEN={Basic Information > App-Level Tokens > Token}
+```
+14.

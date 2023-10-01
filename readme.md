@@ -97,4 +97,6 @@ SLACK_SIGNING_SECRET={Basic Information > App Credentials > Signing Secret}
 SLACK_BOT_USER_TOKEN={Oauth & Permissions > Bot User OAuth Token}
 SLACK_APP_TOKEN={Basic Information > App-Level Tokens > Token}
 ```
-14.
+14. Under the root folder of the project call `docker build --tag ssb .`
+15. Call `docker run ssb` to start the server
+16. You are all set up. Happy bridging :-)

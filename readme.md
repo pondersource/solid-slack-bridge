@@ -1,6 +1,10 @@
 # Solid Slack Bridge
 A bridge that provides a one way sync from Slack to Solid chat.
 
+Demo video:
+
+[![Alt text](https://img.youtube.com/vi/Pd5joZkr5S4/hqdefault.jpg)](https://www.youtube.com/watch?v=Pd5joZkr5S4)
+
 ## How to use it
 Simply add the bot to your Slack workspace and all of your conversations including direct and channel messages will be added to the Solid pods of all the users that have logged in into their Solid accounts.
 

@@ -6,13 +6,26 @@ import { sessionStore } from "./sharedSessions";
 import { IMessage } from "./types";
 import { createUserMessage, isUrlValid } from "./utils";
 import { logger } from "./utils/logger";
+import { ParamsIncomingMessage } from "@slack/bolt/dist/receivers/ParamsIncomingMessage";
+
+function getBody(request: ParamsIncomingMessage) {
+  return new Promise<string>((resolve) => {
+    const bodyParts: any = [];
+    let body;
+    request.on('data', (chunk) => {
+      bodyParts.push(chunk);
+    }).on('end', () => {
+      body = Buffer.concat(bodyParts).toString();
+      resolve(body)
+    });
+  });
+}
 
 const app = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
   clientId: process.env.CLIENT_ID,
   clientSecret: process.env.CLIENT_SECRET,
   installationStore: new FileInstallationStore(),
-  redirectUri: SERVER_BASE_URL + 'oauth',
   stateSecret: 'my-state-secret',
   scopes: [
     'channels:history',
@@ -21,6 +34,7 @@ const app = new App({
     'chat:write',
     'commands',
     'groups:read',
+    'groups:history',
     'im:history',
     'im:read',
     'im:write',
@@ -32,28 +46,64 @@ const app = new App({
     'users:read',
     'team:read',
   ],
-  installerOptions: {
-    redirectUriPath: '/oauth',
-  },
-  //socketMode: true,
+  customRoutes: [
+    {
+      path: '/slack/solidmessage',
+      method: ['POST'],
+      handler: async (req, res) => {
+        const rawBody: string = await getBody(req);
+        const body = JSON.parse(rawBody);
+
+        res.writeHead(200);
+
+        if (body.challenge) {
+          console.log('Received challenge');
+          res.end(body.challenge);
+          return;
+        }
+        
+        console.log('event type', body.type);
+        console.log('event', body.event);
+        res.end('OK');
+      }
+    },
+    {
+      path: '/slack/command',
+      method: ['POST'],
+      handler: async (req, res) => {
+        const rawBody: string = await getBody(req);
+        const params = new URLSearchParams(rawBody);
+        const solidUUID = params.get('user_id');
+        const command = params.get('command');
+        const text: string|null = params.get('text');
+
+        res.writeHead(200);
+
+        if (command == '/solid-login') {
+          let loginURL = `${SERVER_BASE_URL}/login?slackUUID=${solidUUID}`
+          if (text && isUrlValid(text)) {
+            loginURL = `${SERVER_BASE_URL}/login?slackUUID=${solidUUID}&loginURL=${text}`;
+          }
+          res.end(loginURL);
+          return;
+        }
+
+        if (command == '/solid-logout') {
+          let logoutURL = `${SERVER_BASE_URL}/logout?slackUUID=${solidUUID}`;
+          res.end(logoutURL);
+          return;
+        }
+
+        res.end('Bad command');
+      },
+    }
+  ],
   port: PORT
 });
 
-app.command("/solid-login", async ({ command, ack, body, payload }) => {
-
-  let loginURL = `${SERVER_BASE_URL}/login?slackUUID=${command.user_id}`
-  if (isUrlValid(payload.text)) {
-    loginURL = `${SERVER_BASE_URL}/login?slackUUID=${command.user_id}&loginURL=${payload.text}`
-  }
-  await ack(loginURL)
+app.event('message', async() => {
+  logger.info("----------onMessagessssssss-----------");
 });
-
-
-app.command("/solid-logout", async ({ command, ack, body, payload }) => {
-  let loginURL = `${SERVER_BASE_URL}/logout?slackUUID=${command.user_id}`
-  await ack(loginURL)
-});
-
 
 app.message(async ({ message, say, context }) => {
   logger.info("----------onMessage-----------");

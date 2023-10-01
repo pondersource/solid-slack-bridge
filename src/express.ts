@@ -23,6 +23,7 @@ app.use(
   })
 );
 
+// Login end point to authenticate with a Solid identity provider
 app.get("/login", async (req: Request, res: Response) => {
   const session = new Session();
   const slackUUID = req.query.slackUUID as string;
@@ -38,6 +39,7 @@ app.get("/login", async (req: Request, res: Response) => {
   });
 });
 
+// Login callback receives the session and stores it in memory
 app.get("/login/callback", async (req: Request, res: Response) => {
   const session = await getSessionFromStorage(req.session?.sessionId);
 
@@ -50,6 +52,7 @@ app.get("/login/callback", async (req: Request, res: Response) => {
   }
 });
 
+// Endpoint to forget a session. Currently not used.
 app.get("/logout", async (req: Request, res: Response, next: NextFunction) => {
   const slackUUID = req.query.slackUUID as string;
   const session = await getSessionFromStorage(req.session?.sessionId);

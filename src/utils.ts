@@ -12,7 +12,6 @@ import {
     getPodUrlAll
 } from "@inrupt/solid-client";
 import { namedNode } from "@rdfjs/data-model";
-import { ParamsIncomingMessage } from "@slack/bolt/dist/receivers/ParamsIncomingMessage";
 import { IMessage } from "./types";
 import { Session } from "@inrupt/solid-client-authn-node";
 import { logger } from "./utils/logger";

@@ -27,7 +27,7 @@ On every new message event, first, the maker of that message is extracted. We ei
 5. Click "Create new app"
 6. Select "From an app manifest" and click Next
 7. Select a workspace for development and click Next
-8. Copy the app manifest below and paste it into the YAML box and click next. Do not forget to replce the `BASE_URL` in the manifest with your domain and port
+8. Copy the app manifest below and paste it into the YAML box and click next. Do not forget to replce the `BASE_URL` in the manifest with your domain and port (see [known issue with YAML syntax](https://github.com/pondersource/solid-slack-bridge/issues/6))
 ```yaml
 display_information:
   name: Solid Slack Bridge

@@ -32,7 +32,7 @@ app.get("/login", async (req: Request, res: Response) => {
   if (req.session) req.session.sessionId = session.info.sessionId;
 
   await session.login({
-    oidcIssuer: loginURL ?? "https://login.inrupt.com", // "https://solidcommunity.net" "https://login.inrupt.com"
+    oidcIssuer: loginURL ?? "https://solidcommunity.net", // "https://solidcommunity.net" "https://login.inrupt.com"
     redirectUrl: `${EXPRESS_FULL_URL}/login/callback?slackUUID=${slackUUID}`,
     clientName: "Solid Slack Bridge",
     handleRedirect: (url: any) => res.redirect(url),

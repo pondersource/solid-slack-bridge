@@ -27,7 +27,7 @@ On every new message event, first, the maker of that message is extracted. We ei
 5. Click "Create new app"
 6. Select "From an app manifest" and click Next
 7. Select a workspace for development and click Next
-8. Copy the app manifest below and paste it into the YAML box and click next. Do not forget to replce the `BASE_URL` in the manifest with your domain and port (see [known issue with YAML syntax](https://github.com/pondersource/solid-slack-bridge/issues/6))
+8. Copy the app manifest below and paste it into the YAML box and click next. Do not forget to replace the `EXPRESS_FULL_URL` in the manifest with your domain and port, and be aware of a [known issue with YAML syntax](https://github.com/pondersource/solid-slack-bridge/issues/6)).
 ```yaml
 display_information:
   name: Solid Slack Bridge
@@ -91,16 +91,15 @@ settings:
 10. In the "Install your app" section click "Install to Workspace"
 11. Under the "Basic Information" tab look for "App-Level Tokens" and click "Generate Token and Scopes"
 12. Pick any name for your token and Add the `connections:write` to the scopes and click "Generate"
-13. Make a copy of the `.env.example` file and name it `.env`. Fill it as follows:
+13. Make a copy of the `.env.template` file and name it `.env`. Fill it as follows (see also `.env.example` for a localhost example):
 ```
-PORT={the port number for bot connections to Slack}
-SERVER_PORT={the port for the server that will host the Solid login pages}
-SERVER_BASE_URL={your domain address}
-BASE_URL={your domain address}
+BOLT_PORT={the port number for bot connections to Slack (the Bolt app)}
+EXPRESS_PORT={the port for the server that will host the Solid login pages (the Express app)}
+EXPRESS_FULL_URL={your domain address}
 SLACK_SIGNING_SECRET={Basic Information > App Credentials > Signing Secret}
 SLACK_BOT_USER_TOKEN={Oauth & Permissions > Bot User OAuth Token}
 SLACK_APP_TOKEN={Basic Information > App-Level Tokens > Token}
 ```
-14. Under the root folder of the project call `docker build --tag ssb .`
-15. Call `docker run ssb` to start the server
+14. Under the root folder of the project call `npm install ; npm run build ; npm start` to start the server
+15. Or call `docker build -t ssb . ; docker run -p 7000 -p 8000 -v `pwd`/.env:/app/.env --network=host ssb` if you prefer to use Docker
 16. You are all set up. Happy bridging :-)

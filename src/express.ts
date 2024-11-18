@@ -1,5 +1,5 @@
 import express, { NextFunction, Request, Response } from "express";
-import { SERVER_BASE_URL, SLACK_DOMAIN } from "./config/default";
+import { EXPRESS_FULL_URL, SLACK_DOMAIN } from "./config/default";
 import { sessionStore } from "./sharedSessions";
 const cookieSession = require("cookie-session");
 const {
@@ -33,7 +33,7 @@ app.get("/login", async (req: Request, res: Response) => {
 
   await session.login({
     oidcIssuer: loginURL ?? "https://login.inrupt.com", // "https://solidcommunity.net" "https://login.inrupt.com"
-    redirectUrl: `${SERVER_BASE_URL}/login/callback?slackUUID=${slackUUID}`,
+    redirectUrl: `${EXPRESS_FULL_URL}/login/callback?slackUUID=${slackUUID}`,
     clientName: "Solid Slack Bridge",
     handleRedirect: (url: any) => res.redirect(url),
   });
@@ -43,7 +43,7 @@ app.get("/login", async (req: Request, res: Response) => {
 app.get("/login/callback", async (req: Request, res: Response) => {
   const session = await getSessionFromStorage(req.session?.sessionId);
 
-  await session?.handleIncomingRedirect(`${SERVER_BASE_URL}${req.url}`);
+  await session?.handleIncomingRedirect(`${EXPRESS_FULL_URL}${req.url}`);
 
   if (session?.info.webId && session?.info.isLoggedIn) {
     const slackUUID = req.query.slackUUID as string;

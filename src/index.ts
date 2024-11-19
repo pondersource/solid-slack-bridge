@@ -78,6 +78,8 @@ boltApp.message(async ({ message, say, context }) => {
 });
 
 (async () => {
+  await sessionStore.connect();
+  logger.info('connected to tubs database');
   await boltApp.start(BOLT_PORT);
   logger.info(`⚡️ Bolt app running on port http://localhost:${BOLT_PORT}`);
   await expressApp.listen(EXPRESS_PORT, () => logger.info(`Express app running on port http://localhost:${EXPRESS_PORT}`));

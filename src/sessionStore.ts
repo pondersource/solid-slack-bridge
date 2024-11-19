@@ -1,16 +1,37 @@
+import { Client } from 'pg';
 import { Session } from "@inrupt/solid-client-authn-node";
 
 export class SessionStore {
-  private sessions: Record<string, Session | undefined> = {};
-
+  private client: Client;
+  constructor() {
+    this.client = new Client({
+      user: 'tubs',
+      password: process.env.PGPASS,
+      database: 'tubs',
+      host: '127.0.0.1'
+    });
+  }
+  async connect() {
+    await this.client.connect();
+  }
   async saveSession(slackUUID: string, session: Session) {
-    this.sessions[slackUUID] = session;
+    return this.client.query("INSERT INTO slackers ('slackuuid', 'session') values ($1, $2)", [
+      slackUUID,
+      JSON.stringify(session)
+    ]);
   }
 
   async getSession(slackUUID: string) {
-    return this.sessions[slackUUID];
+    const res = await this.client.query("SELECT 'session' FROM slackers WHERE 'slackuuid' = $1", [ slackUUID ]);
+    if (Array.isArray(res)) {
+      try {
+
+        return JSON.parse(res[0].session);
+      } catch (e) {}
+    }
+    return {};
   }
   async removeSession(slackUUID: string) {
-    return this.sessions[slackUUID] = undefined;
+    await this.client.query("DELETE FROM slackers WHERE 'slackuuid' = $1", [ slackUUID ]);
   }
 }

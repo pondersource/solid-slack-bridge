@@ -11,6 +11,9 @@ export class SessionStore {
       host: '127.0.0.1'
     });
   }
+  getClient() {
+    return this.client;
+  }
   async connect() {
     await this.client.connect();
   }

@@ -1,4 +1,5 @@
 import { App as BoltApp } from "@slack/bolt";
+import { randomBytes } from 'crypto';
 import { BOLT_PORT, EXPRESS_FULL_URL, EXPRESS_PORT } from "./config/default";
 import { expressApp } from "./express";
 import { sessionStore } from "./sharedSessions";
@@ -17,16 +18,16 @@ const boltApp = new BoltApp({
 
 
 boltApp.command("/solid-login", async ({ command, ack, body, payload }) => {
-  let loginURL = `${EXPRESS_FULL_URL}/login?slackUUID=${command.user_id}`
+  let loginURL = `${EXPRESS_FULL_URL}/login?slackUUID=${command.user_id}&nonce=${randomBytes(16).toString('hex')}`
   if (isUrlValid(payload.text)) {
-    loginURL = `${EXPRESS_FULL_URL}/login?slackUUID=${command.user_id}&loginURL=${payload.text}`
+    loginURL = `${EXPRESS_FULL_URL}/login?slackUUID=${command.user_id}&nonce=${randomBytes(16).toString('hex')}&loginURL=${payload.text}`
   }
   await ack(loginURL)
 });
 
 
 boltApp.command("/solid-logout", async ({ command, ack, body, payload }) => {
-  let logoutURL = `${EXPRESS_FULL_URL}/logout?slackUUID=${command.user_id}`
+  let logoutURL = `${EXPRESS_FULL_URL}/logout?slackUUID=${command.user_id}&nonce=${randomBytes(16).toString('hex')}`
   await ack(logoutURL)
 });
 

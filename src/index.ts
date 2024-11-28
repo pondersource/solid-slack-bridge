@@ -1,5 +1,5 @@
 import { BOLT_PORT, EXPRESS_FULL_URL, EXPRESS_PORT } from "./config/default";
-import express from "express";
+import express, { Request, Response } from "express";
 import cookieSession from "cookie-session";
 import { SolidClient } from "@tubsproject/solid-client";
 import { createBoltApp } from "./bolt";
@@ -30,6 +30,9 @@ import { SessionStore } from "./sessionStore";
   
   const solidClient = new SolidClient(sessionStore.getClient());
   solidClient.addRoutesInExpress(expressApp, EXPRESS_FULL_URL || '');
+  expressApp.get('/', (req: Request, res: Response) => {
+    res.status(200).send('hi there');
+  })
   await new Promise(resolve => expressApp.listen(EXPRESS_PORT, () => resolve(undefined)));
 
 

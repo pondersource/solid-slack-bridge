@@ -2,7 +2,7 @@ import { BOLT_PORT, EXPRESS_FULL_URL, EXPRESS_PORT } from "./config/default";
 import express, { Request, Response } from "express";
 import cookieSession from "cookie-session";
 import { SolidClient } from "@tubsproject/solid-client";
-import { createBoltApp } from "./bolt";
+import { SlackClient } from "./bolt";
 import { logger } from "./utils/logger";
 import { SessionStore } from "./sessionStore";
 
@@ -10,8 +10,9 @@ import { SessionStore } from "./sessionStore";
   const sessionStore: SessionStore = new SessionStore();
   await sessionStore.connect();
   logger.info('connected to tubs database');
-  const boltApp = await createBoltApp(sessionStore, EXPRESS_FULL_URL || '');
-  await boltApp.start(BOLT_PORT);
+  const slackClient = new SlackClient();
+  await slackClient.create(sessionStore, EXPRESS_FULL_URL || '');
+  await slackClient.start(BOLT_PORT);
   logger.info(`⚡️ Bolt app running on port http://localhost:${BOLT_PORT}`);
 
   const expressApp = express();
@@ -33,6 +34,8 @@ import { SessionStore } from "./sessionStore";
   expressApp.get('/', (req: Request, res: Response) => {
     res.status(200).send('hi there');
   })
+  expressApp.get('/slack/login', slackClient.handleLogin.bind(slackClient));
+  expressApp.get('/slack/logout', slackClient.handleLogout.bind(slackClient));
   await new Promise(resolve => expressApp.listen(EXPRESS_PORT, () => resolve(undefined)));
 
 

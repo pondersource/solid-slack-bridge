@@ -26,10 +26,7 @@ export class SlackClient {
       const uuid = command.user_id;
       const nonce = randomBytes(16).toString('hex');
       this.logins[nonce] = uuid;
-      let loginURL = `${EXPRESS_FULL_URL}/slack/login?slackUUID=${uuid}&nonce=${nonce}`
-      if (isUrlValid(payload.text)) {
-        loginURL = `${EXPRESS_FULL_URL}/slack/login?slackUUID=${uuid}&loginURL=${payload.text}&nonce=${nonce}`
-      }
+      let loginURL = `${EXPRESS_FULL_URL}/slack/login?nonce=${nonce}`
       await ack(loginURL)
     });
     
@@ -38,7 +35,7 @@ export class SlackClient {
       const uuid = command.user_id;
       const nonce = randomBytes(16).toString('hex');
       this.logouts[nonce] = uuid;
-      let logoutURL = `${EXPRESS_FULL_URL}/slack/logout?slackUUID=${uuid}&nonce=${nonce}`
+      let logoutURL = `${EXPRESS_FULL_URL}/slack/logout?nonce=${nonce}`
       await ack(logoutURL)
     });
     
@@ -93,9 +90,19 @@ export class SlackClient {
     return this.boltApp.start(port);
   }
   handleLogin(req: Request, res: Response) {
-    res.status(200).send('Slack log in');
+    const nonce = req.query.nonce as string;
+    if (typeof this.logins[nonce] === 'string') {
+      res.status(200).send(`Adding your Slack identity ${this.logins[nonce]}`);
+    } else {
+      res.status(200).send(`Could not link your Slack identity base on nonce`);
+    }
   }
   handleLogout(req: Request, res: Response) {
-    res.status(200).send('Slack log out');
+    const nonce = req.query.nonce as string;
+    if (typeof this.logouts[nonce] === 'string') {
+      res.status(200).send(`Removing your Slack identity ${this.logouts[nonce]}`);
+    } else {
+      res.status(200).send(`Could not link your Slack identity base on nonce`);
+    }
   }
 }

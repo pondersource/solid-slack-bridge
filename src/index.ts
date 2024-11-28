@@ -1,8 +1,11 @@
 import { BOLT_PORT, EXPRESS_FULL_URL, EXPRESS_PORT } from "./config/default";
+import { Client } from 'pg';
+import express from "express";
+import cookieSession from "cookie-session";
+import { SolidClient } from "@tubsproject/solid-client";
 import { sessionStore } from "./sharedSessions";
 import { createBoltApp } from "./bolt";
 import { logger } from "./utils/logger";
-import { SolidClient } from "@tubsproject/solid-client";
 
 (async () => {
   await sessionStore.connect();
@@ -11,7 +14,24 @@ import { SolidClient } from "@tubsproject/solid-client";
   await boltApp.start(BOLT_PORT);
   logger.info(`⚡️ Bolt app running on port http://localhost:${BOLT_PORT}`);
 
-  const app = new SolidClient(sessionStore.getClient());
-  await app.listen(EXPRESS_PORT, EXPRESS_FULL_URL || '');
+  const expressApp = express();
+  expressApp.use(express.json());
+  expressApp.use(
+    cookieSession({
+      name: "session",
+      // These keys are required by cookie-session to sign the cookies.
+      keys: [
+        "Required, but value not relevant for this demo - key1",
+        "Required, but value not relevant for this demo - key2",
+      ],
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    })
+  ); 
+  
+  const solidClient = new SolidClient(sessionStore.getClient());
+  solidClient.addRoutesInExpress(expressApp, EXPRESS_FULL_URL || '');
+  await new Promise(resolve => expressApp.listen(EXPRESS_PORT, () => resolve(undefined)));
+
+
   console.log(`Express app running on ${EXPRESS_PORT}. Please visit ${EXPRESS_FULL_URL}/`);
 })();

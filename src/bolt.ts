@@ -1,4 +1,5 @@
 import { App as BoltApp } from "@slack/bolt";
+import { randomBytes } from "node:crypto";
 import { BOLT_PORT } from "./config/default";
 import { IMessage } from "./types";
 import { createUserMessage, isUrlValid } from "./utils";
@@ -17,16 +18,16 @@ export async function createBoltApp(sessionStore: SessionStore, EXPRESS_FULL_URL
   
   
   boltApp.command("/solid-login", async ({ command, ack, body, payload }) => {
-    let loginURL = `${EXPRESS_FULL_URL}/login?slackUUID=${command.user_id}`
+    let loginURL = `${EXPRESS_FULL_URL}/login?slackUUID=${command.user_id}&nonce=${randomBytes(16).toString('hex')}`
     if (isUrlValid(payload.text)) {
-      loginURL = `${EXPRESS_FULL_URL}/login?slackUUID=${command.user_id}&loginURL=${payload.text}`
+      loginURL = `${EXPRESS_FULL_URL}/login?slackUUID=${command.user_id}&loginURL=${payload.text}&nonce=${randomBytes(16).toString('hex')}`
     }
     await ack(loginURL)
   });
   
   
   boltApp.command("/solid-logout", async ({ command, ack, body, payload }) => {
-    let logoutURL = `${EXPRESS_FULL_URL}/logout?slackUUID=${command.user_id}`
+    let logoutURL = `${EXPRESS_FULL_URL}/logout?slackUUID=${command.user_id}&nonce=${randomBytes(16).toString('hex')}`
     await ack(logoutURL)
   });
   

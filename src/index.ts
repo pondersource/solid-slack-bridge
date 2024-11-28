@@ -1,16 +1,16 @@
 import { BOLT_PORT, EXPRESS_FULL_URL, EXPRESS_PORT } from "./config/default";
-import { Client } from 'pg';
 import express from "express";
 import cookieSession from "cookie-session";
 import { SolidClient } from "@tubsproject/solid-client";
-import { sessionStore } from "./sharedSessions";
 import { createBoltApp } from "./bolt";
 import { logger } from "./utils/logger";
+import { SessionStore } from "./sessionStore";
 
 (async () => {
+  const sessionStore: SessionStore = new SessionStore();
   await sessionStore.connect();
   logger.info('connected to tubs database');
-  const boltApp = await createBoltApp(EXPRESS_FULL_URL || '');
+  const boltApp = await createBoltApp(sessionStore, EXPRESS_FULL_URL || '');
   await boltApp.start(BOLT_PORT);
   logger.info(`⚡️ Bolt app running on port http://localhost:${BOLT_PORT}`);
 

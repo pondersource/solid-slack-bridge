@@ -1,11 +1,11 @@
 import { App as BoltApp } from "@slack/bolt";
 import { BOLT_PORT } from "./config/default";
-import { sessionStore } from "./sharedSessions";
 import { IMessage } from "./types";
 import { createUserMessage, isUrlValid } from "./utils";
 import { logger } from "./utils/logger";
+import { SessionStore } from "./sessionStore";
 
-export async function createBoltApp(EXPRESS_FULL_URL: string) {
+export async function createBoltApp(sessionStore: SessionStore, EXPRESS_FULL_URL: string) {
 
   const boltApp = new BoltApp({
     signingSecret: process.env.SLACK_SIGNING_SECRET,

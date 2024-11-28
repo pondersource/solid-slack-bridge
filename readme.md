@@ -1,4 +1,4 @@
-# Solid Slack Bridge
+# 🛁 Solid Slack Bridge
 A bridge that provides a one way sync from Slack to Solid chat.
 
 Demo video:

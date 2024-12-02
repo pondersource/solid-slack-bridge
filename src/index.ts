@@ -44,9 +44,9 @@ import { IdentityManager } from "./IdentityManager";
       const slackIds = await identityManager.getSlackIds(webId);
       console.log(`webId ${webId}, slackIds ${slackIds.join(', ')}, getting session`);
       const solidSession = await solidClient.getSession(req);
-      console.log(JSON.stringify(solidSession));
       if (solidSession) {
-        sessionStore.saveSession(webId, solidSession);
+        console.log('storing', webId, solidSession.info.sessionId);
+        sessionStore.saveSession(webId, solidSession.info.sessionId);
       }
       if (slackIds.length) {
         res.status(200).send(`Hi there! Your web ID is ${webId}. Your Slack IDs are:<ul>${slackIds.map(id => `<li>${id} (type <tt>/tubs-disconnect</tt> in Slack to disconnect it)</li>`)}`);

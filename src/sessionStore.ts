@@ -17,10 +17,10 @@ export class SessionStore {
   async connect() {
     await this.client.connect();
   }
-  async saveSession(slackUUID: string, session: Session) {
+  async saveSession(slackUUID: string, sessionId: string) {
     return this.client.query("INSERT INTO solid ('webid', 'session') values ($1, $2)", [
       slackUUID,
-      JSON.stringify(session)
+      sessionId
     ]);
   }
 
@@ -29,7 +29,7 @@ export class SessionStore {
     if (Array.isArray(res)) {
       try {
 
-        return JSON.parse(res[0].session);
+        return res[0].session;
       } catch (e) {}
     }
     return {};

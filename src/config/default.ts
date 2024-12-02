@@ -3,7 +3,7 @@ import 'dotenv/config'
 export const BOLT_PORT = +(process.env.BOLT_PORT || 7000)
 export const EXPRESS_PORT = +(process.env.EXPRESS_PORT || 8000)
 
-export const EXPRESS_FULL_URL = process.env.EXPRESS_FULL_URL
+export const EXPRESS_HOST = process.env.EXPRESS_HOST
 
 export const SLACK_SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET
 export const SLACK_BOT_USER_TOKEN = process.env.SLACK_BOT_USER_TOKEN

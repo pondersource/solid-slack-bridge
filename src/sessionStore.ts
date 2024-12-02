@@ -18,14 +18,16 @@ export class SessionStore {
     await this.client.connect();
   }
   async saveSession(slackUUID: string, sessionId: string) {
-    return this.client.query("INSERT INTO solid ('webid', 'session') values ($1, $2)", [
+    console.log(`INSERT INTO "solid" ("webid", "session") VALUES ($1, $2)`, slackUUID, sessionId);
+    return this.client.query(`INSERT INTO "solid" ("webid", "session") VALUES ($1, $2)`, [
       slackUUID,
       sessionId
     ]);
   }
 
   async getSession(slackUUID: string) {
-    const res = await this.client.query("SELECT 'session' FROM solid WHERE 'webid' = $1", [ slackUUID ]);
+    console.log(`SELECT "session" FROM "solid" WHERE "webid" = $1`, slackUUID);
+    const res = await this.client.query(`SELECT "session" FROM "solid" WHERE "webid" = $1`, [ slackUUID ]);
     if (Array.isArray(res)) {
       try {
 
@@ -35,6 +37,7 @@ export class SessionStore {
     return {};
   }
   async removeSession(slackUUID: string) {
-    await this.client.query("DELETE FROM solid WHERE 'webid' = $1", [ slackUUID ]);
+    console.log(`DELETE FROM solid WHERE "webid" = $1`, slackUUID);
+    await this.client.query(`DELETE FROM solid WHERE "webid" = $1`, [ slackUUID ]);
   }
 }

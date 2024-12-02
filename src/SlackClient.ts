@@ -7,6 +7,7 @@ import { IMessage } from "./types";
 import { createUserMessage, isUrlValid } from "./utils";
 import { logger } from "./utils/logger";
 import { IdentityManager } from "./IdentityManager";
+import { SessionStore } from "./SessionStore";
 
 function getSessionId(req: Request): string {
   if (typeof req.session?.id !== 'string') {
@@ -20,8 +21,10 @@ export class SlackClient {
   private logins: { [nonce: string]: string } = {};
   private logouts: { [nonce: string]: string } = {};
   private identityManager: IdentityManager;
-  constructor(identityManager: IdentityManager) {
+  private sessionStore: SessionStore;
+  constructor(identityManager: IdentityManager, sessionStore: SessionStore) {
     this.identityManager = identityManager;
+    this.sessionStore = sessionStore;
     this.boltApp = new BoltApp({
       signingSecret: process.env.SLACK_SIGNING_SECRET,
       token: process.env.SLACK_BOT_USER_TOKEN,
@@ -31,7 +34,7 @@ export class SlackClient {
     });
   }
   
-  async create(identityManager: IdentityManager, EXPRESS_FULL_URL: string) {
+  async create(EXPRESS_FULL_URL: string) {
     this.boltApp.command("/tubs-connect", async ({ command, ack, body, payload }) => {
       const uuid = command.user_id;
       const nonce = randomBytes(16).toString('hex');
@@ -63,8 +66,11 @@ export class SlackClient {
       const slackUUID = (message as IMessage).user;
       
       // Get the Solid session for this user if we have one
-      const webId = await identityManager.getWebIdForSlackId(slackUUID);
-      
+      const webId = await this.identityManager.getWebIdForSlackId(slackUUID);
+      if (typeof webId !== 'string') {
+        return;
+      }
+      const session = await this.sessionStore.getSession(webId);
       // User's Slack profile info is used to look for their Solid webId
       const userInfo = await this.boltApp.client.users.info({ user: slackUUID })
       const statusTextAsWebId = userInfo.user?.profile?.status_text ?? ""
@@ -84,7 +90,11 @@ export class SlackClient {
         // Create a copy of the message in the pods of all the members of the conversation who have a
         // Solid session with us.
         members?.forEach(async (member) => {
-          let memberSession = await identityManager.getWebIdForSlackId(member);
+          let memberWebId = await this.identityManager.getWebIdForSlackId(member);
+          if (typeof memberWebId !== 'string') {
+            return;
+          }
+          let memberSession = await this.sessionStore.getSession(memberWebId);
           
           // Member has active session, so we write to the pod
           if (memberSession) {

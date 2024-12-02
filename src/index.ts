@@ -5,7 +5,7 @@ import cookieSession from "cookie-session";
 import { Solid } from "@tubsproject/solid";
 import { SlackClient } from "./SlackClient";
 import { logger } from "./utils/logger";
-import { SessionStore } from "./sessionStore";
+import { SessionStore } from "./SessionStore";
 import { IdentityManager } from "./IdentityManager";
 
 (async () => {
@@ -13,8 +13,8 @@ import { IdentityManager } from "./IdentityManager";
   await sessionStore.connect();
   logger.info('connected to tubs database');
   const identityManager = new IdentityManager(sessionStore.getClient());
-  const slackClient = new SlackClient(identityManager);
-  await slackClient.create(sessionStore, EXPRESS_HOST || '');
+  const slackClient = new SlackClient(identityManager, sessionStore);
+  await slackClient.create(EXPRESS_HOST || '');
   await slackClient.start(BOLT_PORT);
   logger.info(`⚡️ Bolt app running on port http://localhost:${BOLT_PORT}`);
   
@@ -42,6 +42,12 @@ import { IdentityManager } from "./IdentityManager";
     console.log(JSON.stringify(webId));
     if (webId) {
       const slackIds = await identityManager.getSlackIds(webId);
+      console.log(`webId ${webId}, slackIds ${slackIds.join(', ')}, getting session`);
+      const solidSession = await solidClient.getSession(req);
+      if (solidSession) {
+        console.log('storing', webId, solidSession.info.sessionId);
+        sessionStore.saveSession(webId, solidSession.info.sessionId);
+      }
       if (slackIds.length) {
         res.status(200).send(`Hi there! Your web ID is ${webId}. Your Slack IDs are:<ul>${slackIds.map(id => `<li>${id} (type <tt>/tubs-disconnect</tt> in Slack to disconnect it)</li>`)}`);
       } else {

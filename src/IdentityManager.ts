@@ -17,4 +17,11 @@ export class IdentityManager {
     const res = await this.pg.query('SELECT "slack" FROM "identity" WHERE "solid" = $1', [ webId ]);
     return res.rows.map(row => row.slack);
   }
+  async getWebIdForSlackId(slackId: string): Promise<string | undefined> {
+    const res = await this.pg.query('SELECT "solid" FROM "identity" WHERE "slack" = $1', [ slackId ]);
+    if (res.rowCount === 1) {
+      return res.rows[0].solid;
+    }
+    return undefined;
+  }
 }

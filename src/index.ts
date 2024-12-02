@@ -34,7 +34,11 @@ import { IdentityManager } from "./IdentityManager";
   const solidClient = new SolidClient(sessionStore.getClient());
   solidClient.addRoutesInExpress(expressApp, EXPRESS_FULL_URL || '');
   expressApp.get('/', (req: Request, res: Response) => {
-    res.status(200).send('hi there');
+    if (req.session!.id) {
+      res.status(200).send(`Hi there ${req.session!.id}`);
+    } else {
+      res.status(200).send(`Log in with <a href="/solid">Solid</a> or install <a href="">our Slack app</a> and type <tt>/tubs-connect</tt> in Slack.`);
+    }
   })
   expressApp.get('/slack/login', slackClient.handleLogin.bind(slackClient));
   expressApp.get('/slack/logout', slackClient.handleLogout.bind(slackClient));

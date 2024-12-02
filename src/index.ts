@@ -1,20 +1,23 @@
+import { randomBytes } from "node:crypto";
 import { BOLT_PORT, EXPRESS_FULL_URL, EXPRESS_PORT } from "./config/default";
 import express, { Request, Response } from "express";
 import cookieSession from "cookie-session";
 import { SolidClient } from "@tubsproject/solid-client";
-import { SlackClient } from "./bolt";
+import { SlackClient } from "./SlackClient";
 import { logger } from "./utils/logger";
 import { SessionStore } from "./sessionStore";
+import { IdentityManager } from "./IdentityManager";
 
 (async () => {
   const sessionStore: SessionStore = new SessionStore();
   await sessionStore.connect();
   logger.info('connected to tubs database');
-  const slackClient = new SlackClient();
+  const identityManager = new IdentityManager(sessionStore.getClient());
+  const slackClient = new SlackClient(identityManager);
   await slackClient.create(sessionStore, EXPRESS_FULL_URL || '');
   await slackClient.start(BOLT_PORT);
   logger.info(`⚡️ Bolt app running on port http://localhost:${BOLT_PORT}`);
-
+  
   const expressApp = express();
   expressApp.use(express.json());
   expressApp.use(
@@ -22,8 +25,7 @@ import { SessionStore } from "./sessionStore";
       name: "session",
       // These keys are required by cookie-session to sign the cookies.
       keys: [
-        "Required, but value not relevant for this demo - key1",
-        "Required, but value not relevant for this demo - key2",
+        process.env.COOKIE_SIGNING_SECRET || randomBytes(32).toString('hex')
       ],
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     })

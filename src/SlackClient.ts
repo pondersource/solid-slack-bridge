@@ -1,17 +1,28 @@
 import { App as BoltApp } from "@slack/bolt";
 import { randomBytes } from "node:crypto";
 import { Request, Response } from "express";
+import { Client } from "pg";
 import { BOLT_PORT } from "./config/default";
 import { IMessage } from "./types";
 import { createUserMessage, isUrlValid } from "./utils";
 import { logger } from "./utils/logger";
 import { SessionStore } from "./sessionStore";
+import { IdentityManager } from "./IdentityManager";
+
+function getSessionId(req: Request): string {
+  if (typeof req.session?.id !== 'string') {
+    req.session!.id = randomBytes(16).toString('hex');
+  }
+  return req.session!.id;
+}
 
 export class SlackClient {
   private boltApp: BoltApp;
   private logins: { [nonce: string]: string } = {};
   private logouts: { [nonce: string]: string } = {};
-  constructor() {
+  private identityManager: IdentityManager;
+  constructor(identityManager: IdentityManager) {
+    this.identityManager = identityManager;
     this.boltApp = new BoltApp({
       signingSecret: process.env.SLACK_SIGNING_SECRET,
       token: process.env.SLACK_BOT_USER_TOKEN,
@@ -89,10 +100,11 @@ export class SlackClient {
   start(port: number) {
     return this.boltApp.start(port);
   }
-  handleLogin(req: Request, res: Response) {
+  async handleLogin(pg: Client, req: Request, res: Response) {
     const nonce = req.query.nonce as string;
     if (typeof this.logins[nonce] === 'string') {
-      res.status(200).send(`Adding your Slack identity ${this.logins[nonce]}`);
+      req.session!.id = await this.identityManager.addIdentity('slack', this.logins[nonce], req.session!.id);
+      res.status(200).send(`Your Slack identity ${this.logins[nonce]} is now linked to your current session ${req.session!.id}`);
     } else {
       res.status(200).send(`Could not link your Slack identity base on nonce`);
     }
@@ -100,6 +112,7 @@ export class SlackClient {
   handleLogout(req: Request, res: Response) {
     const nonce = req.query.nonce as string;
     if (typeof this.logouts[nonce] === 'string') {
+      this.identityManager.removeIdentity('slack', this.logins[nonce], req.session!.id);
       res.status(200).send(`Removing your Slack identity ${this.logouts[nonce]}`);
     } else {
       res.status(200).send(`Could not link your Slack identity base on nonce`);

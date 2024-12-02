@@ -102,8 +102,8 @@ export class SlackClient {
   }
   async handleLogin(webId: string, req: Request, res: Response) {
     const nonce = req.query.nonce as string;
-    if (typeof this.logins[nonce] === 'string') {
-      const slackId = this.logins[nonce];
+    const slackId = this.logins[nonce];
+    if (typeof slackId === 'string') {
       console.log(`nonce ${nonce} matched Slack ID ${slackId}; linking it to webId ${webId}`);
       await this.identityManager.linkSlackToSolid(slackId, webId);
       res.status(200).send(`Your Slack ID ${slackId} is now linked to your webId ${webId}`);
@@ -113,11 +113,12 @@ export class SlackClient {
   }
   handleLogout(webId: string, req: Request, res: Response) {
     const nonce = req.query.nonce as string;
-    if (typeof this.logouts[nonce] === 'string') {
-      this.identityManager.unlinkSlackFromSolid(this.logins[nonce], webId);
-      res.status(200).send(`Your Slack identity ${this.logouts[nonce]} is now unlinked to your webId ${webId}`);
+    const slackId = this.logouts[nonce];
+    if (typeof slackId === 'string') {
+      this.identityManager.unlinkSlackFromSolid(slackId, webId);
+      res.status(200).send(`Your Slack identity ${slackId} is now unlinked to your webId ${webId}. Go <a href="/">home</a>.`);
     } else {
-      res.status(200).send(`Link expired. Please type <tt>/tubs-connect</tt> in a Slack workspace that has <a href="https://api.slack.com/apps/A080HGBNZAA">our app</a> installed to retry.`);
+      res.status(200).send(`Link expired. Please type <tt>/tubs-connect</tt> in a Slack workspace that has <a href="https://api.slack.com/apps/A080HGBNZAA">our app</a> installed to retry. Go <a href="/">home</a>.`);
     }
   }
 }

@@ -40,8 +40,13 @@ import { IdentityManager } from "./IdentityManager";
   expressApp.get('/', async (req: Request, res: Response) => {
     const webId = await solidClient.getWebId(req);
     console.log(JSON.stringify(webId));
-    if (webId) { // FIXME: let
-      res.status(200).send(`Hi there! Are you ready to sync some Slack conversations to your main Solid pod for ${webId}? From here you have two options:<ul><li>Type <tt>/tubs-connect</tt> in a Slack workspace that has <a href="https://api.slack.com/apps/A080HGBNZAA">our Slack app</a> installed</li><li><a href="/solid/logout">Log out</a></li>`);
+    if (webId) {
+      const slackIds = await identityManager.getSlackIds(webId);
+      if (slackIds.length) {
+        res.status(200).send(`Hi there! Your web ID is ${webId}. Your Slack IDs are:<ul>${slackIds.map(id => `<li>${id} (type <tt>/tubs-disconnect</tt> in Slack to disconnect it)</li>`)}`);
+      } else {
+        res.status(200).send(`Hi there! Are you ready to sync some Slack conversations to your main Solid pod for ${webId}? From here you have two options:<ul><li>Type <tt>/tubs-connect</tt> in a Slack workspace that has <a href="https://api.slack.com/apps/A080HGBNZAA">our Slack app</a> installed</li><li><a href="/solid/logout">Log out</a></li>`);
+      }
     } else {
       res.status(200).send(`Log in with your main WebID to <a href="/solid">get started</a>.`);
     }

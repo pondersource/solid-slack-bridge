@@ -11,6 +11,10 @@ export class IdentityManager {
   }
   async unlinkSlackFromSolid(slackId: string, webId: string): Promise<void> {
     console.log('unlinkSlackFromSolid', slackId, webId);
-    await this.pg.query('DELETE FROM "identity" WHERE "slack" = $1 AND "solid" = $2)', [ slackId, webId ]);
+    await this.pg.query('DELETE FROM "identity" WHERE "slack" = $1 AND "solid" = $2', [ slackId, webId ]);
+  }
+  async getSlackIds(webId: string): Promise<string[]> {
+    const res = await this.pg.query('SELECT "slack" FROM "identity" WHERE "solid" = $1', [ webId ]);
+    return res.rows.map(row => row.slack);
   }
 }

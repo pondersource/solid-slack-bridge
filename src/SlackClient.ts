@@ -1,17 +1,28 @@
 import { App as BoltApp } from "@slack/bolt";
 import { randomBytes } from "node:crypto";
 import { Request, Response } from "express";
+import { Client } from "pg";
 import { BOLT_PORT } from "./config/default";
 import { IMessage } from "./types";
 import { createUserMessage, isUrlValid } from "./utils";
 import { logger } from "./utils/logger";
 import { SessionStore } from "./sessionStore";
+import { IdentityManager } from "./IdentityManager";
+
+function getSessionId(req: Request): string {
+  if (typeof req.session?.id !== 'string') {
+    req.session!.id = randomBytes(16).toString('hex');
+  }
+  return req.session!.id;
+}
 
 export class SlackClient {
   private boltApp: BoltApp;
   private logins: { [nonce: string]: string } = {};
   private logouts: { [nonce: string]: string } = {};
-  constructor() {
+  private identityManager: IdentityManager;
+  constructor(identityManager: IdentityManager) {
+    this.identityManager = identityManager;
     this.boltApp = new BoltApp({
       signingSecret: process.env.SLACK_SIGNING_SECRET,
       token: process.env.SLACK_BOT_USER_TOKEN,
@@ -89,20 +100,25 @@ export class SlackClient {
   start(port: number) {
     return this.boltApp.start(port);
   }
-  handleLogin(req: Request, res: Response) {
+  async handleLogin(webId: string, req: Request, res: Response) {
     const nonce = req.query.nonce as string;
-    if (typeof this.logins[nonce] === 'string') {
-      res.status(200).send(`Adding your Slack identity ${this.logins[nonce]}`);
+    const slackId = this.logins[nonce];
+    if (typeof slackId === 'string') {
+      console.log(`nonce ${nonce} matched Slack ID ${slackId}; linking it to webId ${webId}`);
+      await this.identityManager.linkSlackToSolid(slackId, webId);
+      res.status(200).send(`Your Slack ID ${slackId} is now linked to your webId ${webId}`);
     } else {
       res.status(200).send(`Could not link your Slack identity base on nonce`);
     }
   }
-  handleLogout(req: Request, res: Response) {
+  handleLogout(webId: string, req: Request, res: Response) {
     const nonce = req.query.nonce as string;
-    if (typeof this.logouts[nonce] === 'string') {
-      res.status(200).send(`Removing your Slack identity ${this.logouts[nonce]}`);
+    const slackId = this.logouts[nonce];
+    if (typeof slackId === 'string') {
+      this.identityManager.unlinkSlackFromSolid(slackId, webId);
+      res.status(200).send(`Your Slack identity ${slackId} is now unlinked to your webId ${webId}. Go <a href="/">home</a>.`);
     } else {
-      res.status(200).send(`Could not link your Slack identity base on nonce`);
+      res.status(200).send(`Link expired. Please type <tt>/tubs-connect</tt> in a Slack workspace that has <a href="https://api.slack.com/apps/A080HGBNZAA">our app</a> installed to retry. Go <a href="/">home</a>.`);
     }
   }
 }

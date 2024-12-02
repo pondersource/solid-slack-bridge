@@ -100,7 +100,7 @@ export class SlackClient {
   start(port: number) {
     return this.boltApp.start(port);
   }
-  async handleLogin(pg: Client, req: Request, res: Response) {
+  async handleLogin(req: Request, res: Response) {
     const nonce = req.query.nonce as string;
     if (typeof this.logins[nonce] === 'string') {
       req.session!.id = await this.identityManager.addIdentity('slack', this.logins[nonce], req.session!.id);

@@ -32,23 +32,25 @@ import { IdentityManager } from "./IdentityManager";
   ); 
   
   const solidClient = new Solid(sessionStore.getClient());
-  solidClient.on('login', (home: string, id: string) => {
-    identityManager.addIdentity(home, id, undefined);
-    console.log(`solid login event`, home, id);
-  });
-  solidClient.on('logout', (e, f) => {
-    console.log(`solid logout event`, e, f);
-  });
+  // solidClient.on('login', (home: string, id: string) => {
+  //   identityManager.addIdentity(home, id, undefined);
+  //   console.log(`solid login event`, home, id);
+  // });
+  // solidClient.on('logout', (e, f) => {
+  //   console.log(`solid logout event`, e, f);
+  // });
   const routes = solidClient.getExpressRoutes(EXPRESS_HOST || '', '/solid');
   console.log(Object.keys(routes));
   Object.keys(routes).forEach(route => {
     expressApp.get(route, routes[route]);
   });
-  expressApp.get('/', (req: Request, res: Response) => {
-    if (req.session!.id) {
-      res.status(200).send(`Hi there ${req.session!.id}`);
+  expressApp.get('/', async (req: Request, res: Response) => {
+    const webId = await solidClient.getWebId(req);
+    console.log(JSON.stringify(webId));
+    if (webId) { // FIXME: let
+      res.status(200).send(`Hi there! Are you ready to sync some Slack conversations to your main Solid pod for ${webId}? From here you have two options:<ul><li>Type <tt>/tubs-connect</tt> in a Slack workspace that has <a href="https://api.slack.com/apps/A080HGBNZAA">our Slack app</a> installed</li><li><a href="/solid/logout">Log out</a></li>`);
     } else {
-      res.status(200).send(`Log in with <a href="/solid">Solid</a> or install <a href="">our Slack app</a> and type <tt>/tubs-connect</tt> in Slack.`);
+      res.status(200).send(`Log in with your main WebID to <a href="/solid">get started</a>.`);
     }
   })
   expressApp.get('/slack/login', slackClient.handleLogin.bind(slackClient));

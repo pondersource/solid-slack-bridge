@@ -32,13 +32,6 @@ import { IdentityManager } from "./IdentityManager";
   ); 
   
   const solidClient = new Solid(sessionStore.getClient());
-  // solidClient.on('login', (home: string, id: string) => {
-  //   identityManager.addIdentity(home, id, undefined);
-  //   console.log(`solid login event`, home, id);
-  // });
-  // solidClient.on('logout', (e, f) => {
-  //   console.log(`solid logout event`, e, f);
-  // });
   const routes = solidClient.getExpressRoutes(EXPRESS_HOST || '', '/solid');
   console.log(Object.keys(routes));
   Object.keys(routes).forEach(route => {
@@ -53,8 +46,20 @@ import { IdentityManager } from "./IdentityManager";
       res.status(200).send(`Log in with your main WebID to <a href="/solid">get started</a>.`);
     }
   })
-  expressApp.get('/slack/login', slackClient.handleLogin.bind(slackClient));
-  expressApp.get('/slack/logout', slackClient.handleLogout.bind(slackClient));
+  expressApp.get('/slack/login', async (req: Request, res: Response) => {
+    const webId = await solidClient.getWebId(req);
+    if (webId) {
+      return slackClient.handleLogin(webId, req, res);
+    }
+    return res.status(200).send(`Please <a href="/solid/login">connect your Solid pod first</a>, and after that retry to connect your Slack account to it.`);
+  });
+  expressApp.get('/slack/logout', async (req: Request, res: Response) => {
+    const webId = await solidClient.getWebId(req);
+    if (webId) {
+      return slackClient.handleLogout(webId, req, res);
+    }
+    return res.status(200).send(`Please <a href="/solid/login">connect your Solid pod first</a>, and after that retry to disconnect your Slack account from it.`);
+  });
   await new Promise(resolve => expressApp.listen(EXPRESS_PORT, () => resolve(undefined)));
 
 

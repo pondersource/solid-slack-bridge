@@ -6,7 +6,6 @@ import { BOLT_PORT } from "./config/default";
 import { IMessage } from "./types";
 import { createUserMessage, isUrlValid } from "./utils";
 import { logger } from "./utils/logger";
-import { SessionStore } from "./sessionStore";
 import { IdentityManager } from "./IdentityManager";
 
 function getSessionId(req: Request): string {
@@ -32,7 +31,7 @@ export class SlackClient {
     });
   }
   
-  async create(sessionStore: SessionStore, EXPRESS_FULL_URL: string) {
+  async create(identityManager: IdentityManager, EXPRESS_FULL_URL: string) {
     this.boltApp.command("/tubs-connect", async ({ command, ack, body, payload }) => {
       const uuid = command.user_id;
       const nonce = randomBytes(16).toString('hex');
@@ -64,7 +63,7 @@ export class SlackClient {
       const slackUUID = (message as IMessage).user;
       
       // Get the Solid session for this user if we have one
-      const session = await sessionStore.getSession(slackUUID);
+      const webId = await identityManager.getWebIdForSlackId(slackUUID);
       
       // User's Slack profile info is used to look for their Solid webId
       const userInfo = await this.boltApp.client.users.info({ user: slackUUID })
@@ -73,9 +72,9 @@ export class SlackClient {
       // Default maker points to user's profile on Slack
       let maker: string | undefined = `${team?.url}team/${slackUUID}`
       
-      if (session) {
+      if (webId) {
         // If we have the session, we know exactly who the maker is
-        maker = session.info.webId
+        maker = webId
       } else if (isUrlValid(statusTextAsWebId)) {
         // Otherwise if it is indeed a web URL we trust that the user is not lying about their identity
         maker = statusTextAsWebId
@@ -85,7 +84,7 @@ export class SlackClient {
         // Create a copy of the message in the pods of all the members of the conversation who have a
         // Solid session with us.
         members?.forEach(async (member) => {
-          let memberSession = await sessionStore.getSession(member);
+          let memberSession = await identityManager.getWebIdForSlackId(member);
           
           // Member has active session, so we write to the pod
           if (memberSession) {

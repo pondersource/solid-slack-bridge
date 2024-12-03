@@ -7,7 +7,7 @@ import { IMessage } from "./types";
 import { createUserMessage, isUrlValid } from "./utils";
 import { logger } from "./utils/logger";
 import { IdentityManager } from "./IdentityManager";
-import { SessionStore } from "./SessionStore";
+import { SessionStore } from "./sessionStore";
 
 function getSessionId(req: Request): string {
   if (typeof req.session?.id !== 'string') {

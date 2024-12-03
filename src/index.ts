@@ -5,7 +5,7 @@ import cookieSession from "cookie-session";
 import { Solid } from "@tubsproject/solid";
 import { SlackClient } from "./SlackClient";
 import { logger } from "./utils/logger";
-import { SessionStore } from "./SessionStore";
+import { SessionStore } from "./sessionStore";
 import { IdentityManager } from "./IdentityManager";
 
 (async () => {

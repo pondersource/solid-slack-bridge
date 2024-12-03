@@ -10,5 +10,5 @@ await client.connect();
 const thisChunk = 1;
 const numChunk = 2;
 const res = await client.query('SELECT * from slackers', []);
-console.log(res.rows);
+// console.log(res.rows);
 await client.end();

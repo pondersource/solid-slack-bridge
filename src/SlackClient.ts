@@ -1,6 +1,7 @@
 import { App as BoltApp } from "@slack/bolt";
 import { randomBytes } from "node:crypto";
 import { Request, Response } from "express";
+import { Solid } from "@tubsproject/solid";
 import { Client } from "pg";
 import { BOLT_PORT } from "./config/default";
 import { IMessage } from "./types";
@@ -22,9 +23,11 @@ export class SlackClient {
   private logouts: { [nonce: string]: string } = {};
   private identityManager: IdentityManager;
   private sessionStore: SessionStore;
-  constructor(identityManager: IdentityManager, sessionStore: SessionStore) {
+  private solidClient: Solid;
+  constructor(identityManager: IdentityManager, sessionStore: SessionStore, solidClient: Solid) {
     this.identityManager = identityManager;
     this.sessionStore = sessionStore;
+    this.solidClient = solidClient;
     this.boltApp = new BoltApp({
       signingSecret: process.env.SLACK_SIGNING_SECRET,
       token: process.env.SLACK_BOT_USER_TOKEN,
@@ -70,7 +73,7 @@ export class SlackClient {
       if (typeof webId !== 'string') {
         return;
       }
-      const session = await this.sessionStore.getSession(webId);
+      const session = await this.sessionStore.getSessionId(webId);
       // User's Slack profile info is used to look for their Solid webId
       const userInfo = await this.boltApp.client.users.info({ user: slackUUID })
       const statusTextAsWebId = userInfo.user?.profile?.status_text ?? ""
@@ -90,15 +93,20 @@ export class SlackClient {
         // Create a copy of the message in the pods of all the members of the conversation who have a
         // Solid session with us.
         members?.forEach(async (member) => {
-          let memberWebId = await this.identityManager.getWebIdForSlackId(member);
+          const memberWebId = await this.identityManager.getWebIdForSlackId(member);
           if (typeof memberWebId !== 'string') {
             return;
           }
-          let memberSession = await this.sessionStore.getSession(memberWebId);
+          const memberSessionId = await this.sessionStore.getSessionId(memberWebId);
+          if (typeof memberSessionId === 'undefined') {
+            return;
+          }
+          const memberSession = await this.solidClient.getSession(memberSessionId);
           
           // Member has active session, so we write to the pod
           if (memberSession) {
-            await createUserMessage({ session: memberSession, maker, messageBody: message as IMessage });
+            console.log('creating user message', memberWebId, memberSession, maker, message);
+            await createUserMessage({ session: memberSession as any, maker, messageBody: message as IMessage });
           }
         });
       } catch (error: any) {
@@ -113,7 +121,7 @@ export class SlackClient {
     const nonce = req.query.nonce as string;
     const slackId = this.logins[nonce];
     if (typeof slackId === 'string') {
-      console.log(`nonce ${nonce} matched Slack ID ${slackId}; linking it to webId ${webId}`);
+      // console.log(`nonce ${nonce} matched Slack ID ${slackId}; linking it to webId ${webId}`);
       await this.identityManager.linkSlackToSolid(slackId, webId);
       res.status(200).send(`Your Slack ID ${slackId} is now linked to your webId ${webId}`);
     } else {

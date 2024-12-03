@@ -17,27 +17,31 @@ export class SessionStore {
   async connect() {
     await this.client.connect();
   }
-  async saveSession(slackUUID: string, sessionId: string) {
-    console.log(`INSERT INTO "solid" ("webid", "session") VALUES ($1, $2)`, slackUUID, sessionId);
-    return this.client.query(`INSERT INTO "solid" ("webid", "session") VALUES ($1, $2)`, [
+  async saveSessionId(slackUUID: string, sessionId: string): Promise<void> {
+    // console.log(`INSERT INTO "solid" ("webid", "session") VALUES ($1, $2)`, slackUUID, sessionId);
+    await this.client.query(`INSERT INTO "solid" ("webid", "session") VALUES ($1, $2)`, [
       slackUUID,
       sessionId
     ]);
   }
 
-  async getSession(slackUUID: string) {
+  async getSessionId(slackUUID: string): Promise<string | undefined> {
     console.log(`SELECT "session" FROM "solid" WHERE "webid" = $1`, slackUUID);
     const res = await this.client.query(`SELECT "session" FROM "solid" WHERE "webid" = $1`, [ slackUUID ]);
-    if (Array.isArray(res)) {
+    if (Array.isArray(res.rows)) {
       try {
-
-        return res[0].session;
-      } catch (e) {}
+        console.log('returning first hit', res.rows);
+        return res.rows[0].session;
+      } catch (e) {
+        console.error(e);
+      }
+    } else {
+      console.error('no rows result?');
     }
-    return {};
+    return undefined;
   }
-  async removeSession(slackUUID: string) {
-    console.log(`DELETE FROM solid WHERE "webid" = $1`, slackUUID);
+  async removeSessionIds(slackUUID: string): Promise<void> {
+    // console.log(`DELETE FROM solid WHERE "webid" = $1`, slackUUID);
     await this.client.query(`DELETE FROM solid WHERE "webid" = $1`, [ slackUUID ]);
   }
 }

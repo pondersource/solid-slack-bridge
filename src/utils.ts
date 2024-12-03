@@ -18,12 +18,14 @@ import { logger } from "./utils/logger";
 
 // Decide on a location to store the conversation
 export const getChatIndexUrl = async ({ session, chatID }: { session: Session, chatID: string }) => {
+    console.log('getChatIndexUrl', session);
     const pods = await getPodUrlAll(session.info.webId!, { fetch: session.fetch });
     return `${pods[0]}shops/Chat/${chatID}/index.ttl`;
 };
 
 
 export const getOrCreateChatDataset = async ({ session, chatID }: { session: Session, chatID: string }) => {
+    console.log('getOrCreateChatDataset', session);
     const indexUrl = await getChatIndexUrl({ session, chatID })
     try {
         return await getSolidDataset(indexUrl, { fetch: session.fetch });
@@ -37,6 +39,7 @@ export const getOrCreateChatDataset = async ({ session, chatID }: { session: Ses
 
 
 export const createUserMessage = async ({ messageBody, maker, session }: { messageBody: IMessage, maker?: string, session: Session }) => {
+    console.log('createUserMessage', session);
     const { text, ts, channel, user } = messageBody
     const indexUrl = await getChatIndexUrl({ session, chatID: channel })
     logger.info('.......');
